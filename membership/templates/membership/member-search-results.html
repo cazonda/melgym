@@ -1,0 +1,40 @@
+{% extends "membership/layout.html" %}
+
+{% block title %} Members Details {% endblock %}
+
+
+{% block body %}
+
+<table class="table table-hover">
+    <tr>
+        <th>First Name</th>
+        <th>Last Name</th>
+        <th>Email</th>
+        <th>Phone Number</th>
+        <th>Age</th>
+        <th>Gender</th>
+        <th>Address</th>
+        <th>Membership Plan</th>
+        <th>Membership Validity</th>
+    </tr>
+    {% for result in search_results %}
+    <tr>
+        <td> <a href="{% url 'member-detail' result.id%}" style="text-decoration: none;"> {{result.first_name}}</a></td>
+
+        <td> <a href="{% url 'member-detail' result.id%}" style="text-decoration: none;">{{result.last_name}}</a></td>
+        <td>{{result.email}}</td>
+        <td>{{result.phone_number}}</td>
+        <td>{{result.age}}</td>
+        <td>{{result.gender}}</td>
+        <td>{{result.address}}</td>
+        <td>{{result.membership}}</td>
+        <td>{{result.validity}}</td>
+    </tr>
+
+    {% empty %}
+    <p>Member does not exists</p>
+
+    {% endfor %}
+</table>
+
+{% endblock %}
