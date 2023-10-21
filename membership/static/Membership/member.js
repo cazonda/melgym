@@ -12,11 +12,60 @@ document.addEventListener('DOMContentLoaded', () => {
       display_member_memberships(member_memberships_btn.dataset.id)
     });
   }  
+
+  document.querySelectorAll('#pay-membership').forEach(btn => {
+    btn.onclick = () => displayPay(btn.dataset.id)
+  })
 })
 
+function displayPay(id){
+  //document.querySelector('#head').style.display = 'none'
+  //document.querySelector('#card-profile').style.display = 'none'
+  document.querySelector('#member-details').innerHTML =
+    `
+    <form action="" id="pay-membership-form" onsubmit="return false">      
+    <div class="row">
+      <div class="col-sm-3">
+        <p class="mb-0">Amount</p>
+      </div>
+      <div class="col-sm-9">
+        <input type="text" class="form-control" id="payment-amount">
+      </div>
+    </div>
+    <hr>
+    <div class="row">
+      <div class="col-sm-3">
+        <p class="mb-0">Discount</p>
+      </div>
+      <div class="col-sm-9">
+        <input type="text"  class="form-control" id="payment-discount">
+      </div>
+    </div>
+    <hr>   
+    <input type="submit"  value ="Pay" class="btn btn-dark btn-sm">
+  </form>`
+  document.querySelector('#pay-membership-form').addEventListener('submit', () => payMembership(id))
+}
+
+function payMembership(id){
+  let csrftoken = getCookie('csrftoken');
+
+  const paid_amount = document.querySelector('#payment-amount').value;
+  const  discount = document.querySelector('#payment-discount').value;
+
+  fetch('/pay-membership', {
+    method: 'POST',
+    body: JSON.stringify({
+      id: id,
+      discount: discount,
+      paid_amount: paid_amount,
+    }),
+    headers: { "X-CSRFToken": csrftoken },
+  })
+  window.location.reload(`${id}`);
+}
 
 function display_edit(id) {
-
   const email = document.querySelector('#member-email').innerHTML
   const phone = document.querySelector('#member-phone').innerHTML
   const age = document.querySelector('#member-age').innerHTML

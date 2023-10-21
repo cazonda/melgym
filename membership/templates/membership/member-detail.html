@@ -12,14 +12,12 @@
 </ul>
 {% endif %}
 
-<h2 style="text-align: center;" id="head">Member Detail</h2>
 {% if user.is_authenticated %}
 
 <section style="background-color: #eee;">
-    <div class="container py-5">
-  
+    <div class="container ">  
       <div class="row" id="container-body">
-        <div id="card-profile"class="col-12" >
+        <div id="card-profile" class="col-12" >
           <div class="card">
             <div class="card-body">
               <div class = "row">
@@ -29,52 +27,73 @@
                 </div>                
                 <div class="col-9">
                   <div class="row">
-                    <div class="col">
+                    <div class="col-6">
                       <p class="mb-0"><strong>Full Name</strong></p>
                       <p class="text-muted mb-1">{{member.first_name}} {{member.last_name}}</p>
                     </div>
-                    <div class="col">
+                    <div class="col-3">
                       <p class="mb-0"><strong>ID</strong></p>
                       <p class="text-muted mb-1">{{member.id}}</p>
                     </div>
                   </div>
-                  <div class="row">                    
+                  <!--div class="row">                    
                     <div class="col">
                       <p class="mb-0"><strong>Plan Expiry</strong></p>
-                      <p class="text-muted mb-1">{{member.age}} | {{member.gender}}</p>
+                      <p class="text-muted mb-1">{{member.latest_membership.expiry_date|date:"Y-m-d"}}</p>
                     </div>
                     <div class="col">
                       <p class="mb-0"><strong>Due Amount</strong></p>
-                      <p class="text-muted mb-4">{{member.address}}</p>        
+                      <p class="text-muted mb-4">{{member.due_amount}}</p>        
                     </div>
-                  </div>
+                  </div-->
                 </div>
               </div>
             </div>      
             <div class="card-footer text-muted">
-              <!--button type="button" class="btn btn-primary" id="edit-member" data-id="{{member.id}}">Edit</button-->
-              <!--a type="button" class="btn btn-outline-danger ms-1" href="{% url 'remove' member.id %}" >Remove</a-->
               <a type="button" href="{% url 'renew-membership' member.id %}" class="btn btn-outline-success" data-id="{{member.id}}" id="renew">Renew</a>
-              <button type="button" class="btn btn-dark" id="pay-membership" data-id="{{member.id}}">Pay</button>
-              <a type="button" class="btn btn-outline-success" data-id="{{member.id}}" id="member_memberships">Memberships</a>
+              <button type="button" class="btn btn-primary" id="edit-member" data-id="{{member.id}}">Edit</button>
+              <a type="button" class="btn btn-outline-danger ms-1" href="{% url 'remove' member.id %}" >Remove</a>              
+              <!--button type="button" class="btn btn-dark" id="pay-membership" data-id="{{member.id}}">Pay</button-->
+              <a type="button" class="btn btn-outline-success" data-id="{{member.id}}" id="member_memberships">Hist</a>
             </div>
           </div>
         </div>
-
 
         <div class="col-12">
           <div class="card mb-4">
             <div class="card-body">
               <div id="member-details">
-                <div class="row">
-                  <div class="col-4">
-                    <p class="mb-0">Full Name</p>
-                  </div>
-                  <div class="col-8">
-                    <p class="text-muted mb-0">{{member.first_name}} {{member.last_name}}</p>
-                  </div>
-                </div>
-                <hr>
+                <!--h2 style="text-align: center;">Member Memberships</h2-->
+                <table class="table table-hover">
+                    <!--tr>
+                        <th>Membership</th>
+                        <th>Due</th>        
+                    </tr-->
+                    {% for membership in member.all_memberships %} 
+                        <tr>
+                          <td>
+                            <p class="mb-0"><strong>{{membership}}</strong></p>
+                            <small class="text-muted">
+                              <strong>DUE:</strong> {{membership.due_amount}}, 
+                              <strong>PAID:</strong> {{membership.paid_amount}}
+                            </small>  
+                          </td>
+                          <td><button type="button" class="btn-sm btn-dark" id="pay-membership" data-id="{{membership.id}}"><strong>Pay</strong></button></td>
+                        </tr>
+                        {% empty %}
+                        <p>No results to show</p>
+                    {% endfor %}
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        <!--div class="col-12">
+          <div class="card mb-4">
+            <div class="card-body">
+              <div id="member-details">
                 <div class="row">
                   <div class="col-4">
                     <p class="mb-0">Email</p>
@@ -86,7 +105,7 @@
                 <hr>
                 <div class="row">
                   <div class="col-4">
-                    <p class="mb-0">Phone Number</p>
+                    <p class="mb-0">Phone</p>
                   </div>
                   <div class="col-8">
                     <p class="text-muted mb-0" id="member-phone">{{member.phone_number}}</p>
@@ -122,26 +141,16 @@
                 <hr>
                 <div class="row">
                   <div class="col-4">
-                    <p class="mb-0">Membership Plan</p>
+                    <p class="mb-0">Plan</p>
                   </div>
                   <div class="col-8">
-                    <p class="text-muted mb-0" id="member-plan">{{member.membership}}</p>
-                  </div>
-                </div>
-                <hr>
-                <div class="row">
-                  <div class="col-4">
-                    <p class="mb-0">Membership Validity</p>
-                  </div>
-                  <div class="col-8">
-                    <p class="text-muted mb-0">{{member.validity}}</p>
+                    <p class="text-muted mb-0" id="member-plan">{{member.latest_membership}}</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>        
-        </div>
-
+        </div-->
       </div>
     </div>
   </section>

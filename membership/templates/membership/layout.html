@@ -3,7 +3,7 @@
 <html lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-      <title>{% block title %}Membership Management{% endblock %}</title>
+      <title>{% block title %}Melgym{% endblock %}</title>
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1, shrink-to-fit=no"
@@ -16,11 +16,15 @@
       rel="stylesheet"
       href="{% static 'Membership/A.style.css.pagespeed.cf.4cGS_Kvzku.css' %}"
     />
+    <link
+      rel="stylesheet"
+      href="{% static 'Membership/melgym.css' %}"
+    />
     {% block style %} {% endblock %}
   </head>
 
   <body>
-    <div class="container">
+    <!--div class="container">
       <div class="row justify-content-between">
         <div class="col">
           <a class="navbar-brand" href="{% url 'index' %}"
@@ -29,7 +33,7 @@
         </div>
         <div class="col d-flex justify-content-end"></div>
       </div>
-    </div>
+    </div!-->
     <nav
       class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light"
       id="ftco-navbar"
@@ -44,7 +48,8 @@
           aria-expanded="false"
           aria-label="Toggle navigation"
         >
-          <span class="fa fa-bars"></span> Menu
+          <!--span class="fa fa-bars"></span> Menu-->
+          <span class="navbar-toggler-icon"></span>
         </button>
         {% if user.is_authenticated %}
         <form
@@ -80,13 +85,10 @@
             {% endif %} {% if user.is_authenticated %}
             <li class="nav-item">
               <a href="{% url 'all-members' %}" class="nav-link">Members</a>
-            </li>
-            <li class="nav-item">
-              <a href="{% url 'all-memberships' %}" class="nav-link">Memberships</a>
-            </li>            
-            <li class="nav-item">
+            </li>        
+            <!--li class="nav-item">
               <a href="{% url 'add-members' %}" class="nav-link">Add Members</a>
-            </li>
+            </li-->
             <li class="nav-item">
               <a href="{% url 'membership' %}" class="nav-link">Membership Plans</a>
             </li>

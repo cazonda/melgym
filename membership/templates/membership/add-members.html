@@ -1,9 +1,11 @@
 {% extends "membership/layout.html" %}
 
+{% block title %} Melgym | Add Member {% endblock %}
+
 {% block body %}
 
 <div id='member-form'>
-    <h2 style="text-align: center;">Add Members</h2>
+    <h2 style="text-align: center;">Add Member</h2>
 
     {% if messages %}
     <ul class="messages">
@@ -45,11 +47,6 @@
             <label for="membership" style="display: inline-block;">Membership Plan</label>
             <div class="form-group">
                 {{form.membership}}
-            </div>
-
-            <label for="validity" style="display: inline-block;">Valid Until</label>
-            <div class="form-group" style="display: inline-block;">
-                {{form.validity}}
             </div>
 
             <div class="form-group">

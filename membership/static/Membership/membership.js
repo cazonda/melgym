@@ -20,7 +20,6 @@ function display_edit(id){
         element[i].style.display = 'none'
     }
 
-
     const old_price = document.querySelector(`#price-${id}`).innerHTML
 
     document.querySelector(`#price-${id}`).innerHTML = `

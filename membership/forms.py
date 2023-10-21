@@ -76,22 +76,27 @@ class MembershipForm(ModelForm):
             'membership_type':TextInput(attrs={
                'class':'form-control',
                'style': style,
-               'placeholder': 'Membership Type',
-            }),          
+               'placeholder': 'Type',
+            }),
             
-            'membership_duration': forms.Select(choices=(("1","1 Month"),("3","3 Months"),("6","6 Months"),("12","12 Months")),
-                                attrs={
-                                    'class':'form-control','style': style}),
+            'membership_duration':NumberInput(attrs={
+               'class':'form-control',
+               'style': style,
+               'placeholder': 'Duration',
+               'pattern':'[0-9]',
+            }),
              
             'membership_price':NumberInput(attrs={
                'class':'form-control',
                'style': style,
-               'placeholder': 'Membership Price',
+               'placeholder': 'Price',
             }),
         }
         
         
 class MemberForm(ModelForm):
+    membership = forms.ModelChoiceField(queryset=Membership.objects.all(), widget=forms.Select)
+    membership.widget.attrs.update({'class': 'form-control'})
     
     def __init__(self,*args,**kwargs):
         self.request = kwargs.pop("request")
@@ -99,10 +104,8 @@ class MemberForm(ModelForm):
 
     class Meta:
         model = Members
-        fields = ['first_name', 'last_name', 'email', 'phone_number', 'age', 'gender', 'address']
-        
-        membership = forms.ModelChoiceField(queryset=None, to_field_name="membership_type", empty_label=None)
-
+        fields = ['first_name', 'last_name', 'email', 'phone_number', 'age', 'gender', 'address', 'membership']
+  
         style = 'max-width: 300px;'
         widgets = {
             'first_name':TextInput(attrs={

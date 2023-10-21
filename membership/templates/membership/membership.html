@@ -2,7 +2,7 @@
 {% load static %}
 {% block title %} Membership Plans {% endblock %}
 {% block style %}
-<link rel="stylesheet" href="{% static 'Membership/styles.css' %}">
+<link rel="stylesheet" href="{% static 'Membership/melgym.css' %}">
 <link rel="stylesheet" href="{% static 'Membership/remove-style.css' %}">
 <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
@@ -24,15 +24,12 @@
 
 <table class="table table-hover">
     <tr>
-        <th>Membership Type</th>
-        <th>Membership Duration</th>
-        <th>Membership Price</th>
-
+        <th>Type</th>
+        <th>Duration</th>
+        <th>Price</th>
     </tr>
     {% for plan in plans %}
-
     <tr>
-
         <td>
             <div class="btn-group">
                 <button type="button" class="btn btn-secondary">{{plan.membership_type}}</button>
@@ -47,14 +44,12 @@
                 </div>
             </div>
         </td>
-
-        {% if plan.membership_duration != "1" %}
-        <td>{{plan.membership_duration}} months</td>
+        {% if plan.membership_duration > 1 %}
+            <td>{{plan.membership_duration}} days</td>
         {% else %}
-        <td>{{plan.membership_duration}} month</td>
+            <td>{{plan.membership_duration}} day</td>
         {% endif %}
-
-       <td> Rs.<span id="price-{{plan.id}}">{{plan.membership_price}}</span></td>
+       <td><span id="price-{{plan.id}}">{{plan.membership_price}} MZN</span></td>
 
     </tr>
     {% empty %}
@@ -88,7 +83,7 @@
 
 
 <div class="border">
-    <h2 style="text-align: center;" id="page-title">Add Membership Plans</h2>
+    <h2 style="text-align: center;" id="page-title">Add Membership Plan</h2>
 </div>
 <div class="d-flex justify-content-center">
     <form action="{% url 'membership' %}" method="post" id="form-div">
@@ -103,7 +98,7 @@
             {{form.membership_price}}
         </div>
         <div class="form-group">
-            <input type="submit" class="btn btn-primary btn-sm">
+            <input type="submit" class="btn btn-primary btn-sm" value = "Add Membership">
         </div>
     </form>
 </div>
