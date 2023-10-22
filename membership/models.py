@@ -8,7 +8,11 @@ class User(AbstractUser):
     date_of_birth = models.DateField()
     phone_number = models.CharField(max_length=20, blank=False)
 
+
 class Membership(models.Model):
+    #TODO add membership_name
+    #TODO criar classe membership_type(online, presencial, geral, personalizado, etc)
+    #TODO remover 'membership_' dos atributos
     membership_type = models.CharField(max_length=100, blank=False)
     membership_price = models.DecimalField(max_digits=20, decimal_places=2)
     #duration in days
@@ -23,6 +27,7 @@ class Membership(models.Model):
 
 
 class Members(models.Model):
+    #TODO o nome deve ser Member
     first_name = models.CharField(max_length=100, blank=False)
     last_name = models.CharField(max_length=100, blank=False)
     email = models.EmailField(max_length=100, blank=False)
@@ -35,8 +40,8 @@ class Members(models.Model):
     def latest_membership(self):        
         return MemberMembership.objects.filter(member_id = self.id).last()
 
-    def all_memberships(self):
-        return MemberMembership.objects.filter(member_id = self.id)
+    def latest_memberships(self):
+        return MemberMembership.objects.filter(member_id = self.id).order_by('-id')
     
     def due_amount(self):
         sum_dict = MemberMembership.objects.filter(member_id = self.id).aggregate(
@@ -45,7 +50,6 @@ class Members(models.Model):
             paid_amount = Sum('paid_amount'),
             admission_fees = Sum('admission_fees'),
         )
-        print(sum_dict)
         total_amount = sum_dict['total_amount'] if sum_dict['total_amount'] else 0
         discount = sum_dict['discount'] if sum_dict['discount'] else 0
         paid_amount = sum_dict['paid_amount'] if sum_dict['paid_amount'] else 0
@@ -71,10 +75,14 @@ class MemberMembership(models.Model):
     discount = models.DecimalField(max_digits=20, decimal_places=2)
     paid_amount = models.DecimalField(max_digits=20, decimal_places=2)
     admission_fees = models.DecimalField(max_digits=20, decimal_places=2)
+    #(U)npaid, (I)ncomplete, (P)aid
     status = models.CharField(max_length=2, blank=False)
 
     def due_amount(self):
         return self.total_amount + self.admission_fees - self.discount - self.paid_amount
+    
+    def is_late(self):
+        return self.expiry_date < date.today()
 
     def __str__(self):
         return f'{self.membership.membership_type} until {self.expiry_date}'

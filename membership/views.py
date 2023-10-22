@@ -4,7 +4,6 @@ from attr import attr
 from decimal import Decimal
 from django import forms
 from django.db import IntegrityError
-from django.forms import EmailInput, ModelForm, TextInput
 from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
@@ -106,43 +105,48 @@ def membership(request):
 
 def renew_membership(request, id):
     template = 'membership/renew-membership.html'
+    member = Members.objects.get(id = id)
     if request.method == "POST":
         form = MemberMembershipForm(request.POST, request=request)
         if form.is_valid():
             membership = form.cleaned_data['membership']
-            member = form.cleaned_data['member']
-            purchase_date = form.cleaned_data['purchase_date']
-            expiry_date = form.cleaned_data['expiry_date']
-            total_amount = form.cleaned_data['total_amount']
             discount = form.cleaned_data['discount']
             paid_amount = form.cleaned_data['paid_amount']
-            admission_fees = form.cleaned_data['admission_fees']
-            status = form.cleaned_data['status']
 
             member_membership = MemberMembership(
                 membership = membership,
                 member = member,
-                purchase_date = purchase_date,
-                expiry_date = expiry_date,
-                total_amount = total_amount,
+                purchase_date = date.today(),
+                expiry_date = calc_membership_expiry_date(membership.membership_duration),
+                total_amount = membership.membership_price,
                 discount = discount,
                 paid_amount = paid_amount,
-                admission_fees = admission_fees,
-                status = status
+                #admission fee só se cobra no cadastro do membro
+                admission_fees = 0,
+                status = 'U'
             )
             member_membership.save()
             
             messages.success(request, 'Membership was successfully renewed')
-
             return render(request, template, {
-                'form': MemberMembershipForm(request.POST,request=request)
+                'form': MemberMembershipForm(request.POST,request=request),
+                'member_id': id
             })
         else:
-            print(form.errors)
-        
+            messages.error(request, form.errors)  
+            return render(request, template, {
+                'form': MemberMembershipForm(request.POST,request=request),
+                'member_id': id,
+            })
+    
     return render(request, template, {
-        'form': MemberMembershipForm(request=request),
-        'member_id': id
+        'form': MemberMembershipForm(request=request, initial = {
+            'membership': member.latest_membership().membership.pk,
+            'discount': '0.00',
+            'paid_amount': member.latest_membership().membership.membership_price,
+        }),
+        'member_id': id,
+        'member': member,
     })
 
 
@@ -158,9 +162,12 @@ def pay_membership(request):
     member_membership = MemberMembership.objects.get(pk = id)
     member_membership.discount = Decimal(discount)
     member_membership.paid_amount = member_membership.paid_amount + Decimal(paid_amount)
+    if member_membership.due_amount() > 0:
+        member_membership.status = 'I'
+    else:
+        member_membership.status = 'P'
     member_membership.save()
 
-    print(member_membership)
     messages.success(request, 'Membership was successfully paid.')
     return HttpResponseRedirect(reverse('member-detail', args=(id)))
 
@@ -200,7 +207,7 @@ def add_members(request):
                 paid_amount = 0,
                 admission_fees = 0,
                 #rever este status
-                status = 'N'
+                status = 'U'
             )
             membermembership.save()
             
@@ -217,25 +224,13 @@ def add_members(request):
 @login_required(login_url='/login',redirect_field_name=None)
 def all_members(request):
     members = Members.objects.all()
-    paginator = Paginator(members, 5)
+    paginator = Paginator(members, 50)
     page_num = request.GET.get('page')
     page_obj = paginator.get_page(page_num)
     return render(request, 'membership/all-members.html', {
         'page_obj': page_obj,
         'form': SearchForm()
     })
-
-
-#@login_required(login_url='/login',redirect_field_name=None)
-#def all_memberships(request):
-#    members = MemberMembership.objects.all()
-#    paginator = Paginator(members, 5)
-#    page_num = request.GET.get('page')
-#    page_obj = paginator.get_page(page_num)
-#    return render(request, 'membership/all-memberships.html', {
-#        'page_obj': page_obj,
-#        'form': SearchForm()
-#    })
 
 
 def member_search(request):

@@ -148,39 +148,35 @@ class MemberForm(ModelForm):
         
 
 class MemberMembershipForm(ModelForm):
-    
-    membership = forms.ModelChoiceField(queryset=Membership.objects.all(), widget=forms.Select)
-    membership.widget.attrs.update({'class': 'form-control'})    
-    
-    purchase_date = forms.DateField(widget=forms.HiddenInput(), initial=date.today()) 
-    admission_fees = forms.IntegerField(widget=forms.HiddenInput(), initial=0) 
-    status = forms.CharField(widget=forms.HiddenInput(), initial='N')
-
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop("request")
         super(MemberMembershipForm, self).__init__(*args,**kwargs)
-
-
+    
+    membership = forms.ModelChoiceField(
+        queryset=Membership.objects.all(), 
+        widget=forms.Select(),
+    )
+    membership.widget.attrs.update({'class': 'form-control'}) 
     class Meta:
         model = MemberMembership
-        fields = ['membership', 'member','purchase_date', 'expiry_date', 'total_amount', 'discount', 'paid_amount', 'admission_fees', 'status']
+        fields = ['membership', 'discount', 'paid_amount']
 
         style = 'max-width: 300px;'
         widgets = {
-            'expiry_date': forms.DateInput(
-                format=('%Y-%m-%d'),
-                attrs={'class': 'form-control', 
-                    'type': 'date'
-              }),
-            'discount': TextInput(attrs={
+            'discount': NumberInput(attrs={
+                'label': 'Discount',
                 'class':'form-control',
                 'style': style,
                 'placeholder': 'Discount',
+                'min': '0.00',
+                'step': '0.01',
             }),   
-            'paid_amount': TextInput(attrs={
+            'paid_amount': NumberInput(attrs={
                 'class':'form-control',
                 'style': style,
                 'placeholder': 'Paid Amount',
+                'min': '0.00',
+                'step': '0.01',
             })  
         }
         

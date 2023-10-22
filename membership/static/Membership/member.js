@@ -26,19 +26,19 @@ function displayPay(id){
     <form action="" id="pay-membership-form" onsubmit="return false">      
     <div class="row">
       <div class="col-sm-3">
-        <p class="mb-0">Amount</p>
+        <label><strong>Amount</strong></label>
       </div>
       <div class="col-sm-9">
-        <input type="text" class="form-control" id="payment-amount">
+        <input type="number" min="0.00" step="0.01" class="form-control" id="payment-amount">
       </div>
     </div>
     <hr>
     <div class="row">
       <div class="col-sm-3">
-        <p class="mb-0">Discount</p>
+        <label><strong>Discount</strong></label>
       </div>
       <div class="col-sm-9">
-        <input type="text"  class="form-control" id="payment-discount">
+        <input type="number" min="0.00" step="0.01" type="text"  class="form-control" id="payment-discount">
       </div>
     </div>
     <hr>   

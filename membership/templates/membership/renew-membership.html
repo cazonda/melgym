@@ -3,8 +3,6 @@
 {% block body %}
 
 <div id='member-form'>
-    <h2 style="text-align: center;">Renew Membership</h2>
-
     {% if messages %}
     <ul class="messages">
         {% for message in messages %}
@@ -15,19 +13,21 @@
     <div class="d-flex justify-content-center">
         <form action="{% url 'renew-membership' member_id %}" method="post">
             {% csrf_token %}
-
             <div class="form-group">
+                <h4 style="text-align: center;">Renew {{member.first_name}} {{member.last_name}}</h4>
+            </div>
+            <div class="form-group">
+                <label><strong>Membership</strong></label>
                 {{form.membership}}
             </div>
             <div class="form-group">
-                {{form.expiry_date}}
-            </div>
-            <div class="form-group">
-                {{form.discount}}
-            </div>
-            <div class="form-group">
+                <label><strong>Paid Amount</strong></label>
                 {{form.paid_amount}}
             </div>
+            <div class="form-group">
+                <label><strong>Discount</strong></label>
+                {{form.discount}}
+            </div>            
             <div class="form-group">
                 <input class="btn btn-dark" type="submit" value="Renew">
             </div>
