@@ -16,7 +16,7 @@
     {% endif %}
     <div class="d-flex justify-content-center">
 
-        <form action="{% url 'add-members' %}" method="post">
+        <form action="{% url 'add-member' %}" method="post">
             {% csrf_token %}
 
             <div class="form-group">
@@ -31,11 +31,11 @@
             <div class="form-group">
                 {{form.phone_number}}
             </div>
+            <label for="date_of_birth" style="display: inline-block;">Date Of Birth</label>
             <div class="form-group">
-                {{form.age}}
+                {{form.date_of_birth}}
             </div>
             <label for="gender" style="display: inline-block;">Gender</label>
-
             <div class="form-group" style="display: inline-block;">
                 {{form.gender}}
             </div>
@@ -48,6 +48,11 @@
             <div class="form-group">
                 {{form.membership}}
             </div>
+            <label for="training_objectives" style="display: inline-block;">Objective(s)</label>
+            <div class="form-group">
+                {{form.training_objectives}}
+            </div>
+            
 
             <div class="form-group">
                 <input class="btn btn-primary" type="submit" value="Add Member">

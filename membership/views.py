@@ -3,7 +3,7 @@ from tkinter import Widget
 from attr import attr
 from decimal import Decimal
 from django import forms
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
@@ -15,8 +15,9 @@ from django.contrib import messages
 import json
 
 from membership.utils import calc_membership_expiry_date
-from .models import MemberMembership, User, Membership, Members
-from .forms import MemberMembershipForm, MembershipForm, UserForm, MemberForm, SearchForm
+from .models import MemberMembership, Membership, Member
+from .forms import MemberMembershipForm, MembershipForm, MemberForm, SearchForm
+import datetime 
 from datetime import date
 
 
@@ -44,50 +45,50 @@ def logout_view(request):
     return HttpResponseRedirect(reverse('index'))
 
 
-def register(request):
-    template = 'membership/register.html'
-    if request.method == 'POST':
-        username = request.POST['username']
-        first_name = request.POST['first_name']
-        last_name = request.POST['last_name']
-        email = request.POST['email']
-        personal_address = request.POST['personal_address']
-        date_of_birth = request.POST['date_of_birth']
-        phone_number = request.POST['phone_number']
-        gender = 'Other' #request.POST['gender']
-        password = request.POST['password']
-        confirmation = request.POST['confirmation']
+#def register(request):
+#    template = 'membership/register.html'
+#    if request.method == 'POST':
+#        username = request.POST['username']
+#        first_name = request.POST['first_name']
+#        last_name = request.POST['last_name']
+#        email = request.POST['email']
+#        personal_address = request.POST['personal_address']
+#        date_of_birth = request.POST['date_of_birth']
+#        phone_number = request.POST['phone_number']
+#        gender = 'Other' #request.POST['gender']
+#        password = request.POST['password']
+#        confirmation = request.POST['confirmation']
 
-        if password != confirmation:
-            return render(request, template, {'message': 'Passwords do not match'})
+#        if password != confirmation:
+#            return render(request, template, {'message': 'Passwords do not match'})
 
-        try:
-            user = User(username=username, first_name=first_name, last_name=last_name, email=email, personal_address=personal_address,
-                        date_of_birth=date_of_birth, phone_number=phone_number)
-            user.set_password(password)
-            user.save()
-        except IntegrityError:
-            return render(request, template, {
-                'message': "Email already taken."
-            })
-        login(request, user)
-        return HttpResponseRedirect(reverse('index'))
+#        try:
+#            user = User(username=username, first_name=first_name, last_name=last_name, email=email, personal_address=personal_address,
+#                        date_of_birth=date_of_birth, phone_number=phone_number)
+#            user.set_password(password)
+#            user.save()
+#        except IntegrityError:
+#            return render(request, template, {
+#                'message': "Email already taken."
+#            })
+#        login(request, user)
+#        return HttpResponseRedirect(reverse('index'))
 
-    return render(request, template, {'form': UserForm()})
+#    return render(request, template, {'form': UserForm()})
 
 
 def membership(request):
-    plans = Membership.objects.all().order_by('membership_type','membership_price')
+    plans = Membership.objects.all().order_by('type','price')
     template = 'membership/membership.html'
     if request.method == 'POST':
         form = MembershipForm(request.POST)
         if form.is_valid():
-            mem_type = form.cleaned_data['membership_type']
-            mem_duration = form.cleaned_data['membership_duration']
-            mem_price = form.cleaned_data['membership_price']
+            name = form.cleaned_data['name']
+            type = form.cleaned_data['type']
+            duration = form.cleaned_data['duration']
+            price = form.cleaned_data['price']
 
-            membership = Membership(membership_type=mem_type,
-                                    membership_duration=mem_duration, membership_price=mem_price)
+            membership = Membership(name = name, type = type, duration = duration, price = price)
             membership.save()
             
             messages.success(request, 'The membership plan was successfully added')
@@ -105,7 +106,7 @@ def membership(request):
 
 def renew_membership(request, id):
     template = 'membership/renew-membership.html'
-    member = Members.objects.get(id = id)
+    member = Member.objects.get(id = id)
     if request.method == "POST":
         form = MemberMembershipForm(request.POST, request=request)
         if form.is_valid():
@@ -117,10 +118,12 @@ def renew_membership(request, id):
                 membership = membership,
                 member = member,
                 purchase_date = date.today(),
-                expiry_date = calc_membership_expiry_date(membership.membership_duration),
-                total_amount = membership.membership_price,
+                expiry_date = calc_membership_expiry_date(membership.duration, member.latest_membership().expiry_date),
+                total_amount = membership.price,
                 discount = discount,
                 paid_amount = paid_amount,
+                training_start = datetime.time(0, 0, 0),
+                training_end = datetime.time(23, 59, 59),
                 #admission fee só se cobra no cadastro do membro
                 admission_fees = 0,
                 status = 'U'
@@ -128,10 +131,11 @@ def renew_membership(request, id):
             member_membership.save()
             
             messages.success(request, 'Membership was successfully renewed')
-            return render(request, template, {
-                'form': MemberMembershipForm(request.POST,request=request),
-                'member_id': id
-            })
+            return HttpResponseRedirect(reverse('member-detail', args=(id,)))
+            #return render(request, template, {
+            #    'form': MemberMembershipForm(request.POST,request=request),
+            #    'member_id': id
+            #})            
         else:
             messages.error(request, form.errors)  
             return render(request, template, {
@@ -143,7 +147,7 @@ def renew_membership(request, id):
         'form': MemberMembershipForm(request=request, initial = {
             'membership': member.latest_membership().membership.pk,
             'discount': '0.00',
-            'paid_amount': member.latest_membership().membership.membership_price,
+            'paid_amount': member.latest_membership().membership.price,
         }),
         'member_id': id,
         'member': member,
@@ -171,59 +175,60 @@ def pay_membership(request):
     messages.success(request, 'Membership was successfully paid.')
     return HttpResponseRedirect(reverse('member-detail', args=(id)))
 
-
-def add_members(request):
-    template = 'membership/add-members.html'
+@transaction.atomic
+def add_member(request):
+    template = 'membership/add-member.html'
     if request.method == "POST":
         form = MemberForm(request.POST,request=request)
         if form.is_valid():
             first_name = form.cleaned_data['first_name']
             last_name = form.cleaned_data['last_name']
             email = form.cleaned_data['email']
-            phone_number = form.cleaned_data['phone_number']
-            age = form.cleaned_data['age']
+            date_of_birth = form.cleaned_data['date_of_birth']
             gender = form.cleaned_data['gender']
+            phone_number = form.cleaned_data['phone_number']
             address = form.cleaned_data['address']
+            training_objectives = form.cleaned_data['training_objectives']
             membership = form.cleaned_data['membership']           
 
-            member = Members(
+            member = Member(
                 first_name = first_name, 
                 last_name = last_name, 
                 email = email,
-                phone_number = phone_number, 
-                age = age, 
-                gender = gender, 
-                address = address
+                date_of_birth = date_of_birth, 
+                gender = gender,
+                phone_number = phone_number,                 
+                address = address,
             )
             member.save()
+            member.training_objectives.set(training_objectives)
 
             membermembership = MemberMembership(
                 member = member,
                 membership = membership,
                 purchase_date = date.today(),
-                expiry_date = calc_membership_expiry_date(membership.membership_duration),
-                total_amount = membership.membership_price,
+                expiry_date = calc_membership_expiry_date(membership.duration),
+                total_amount = membership.price,
                 discount = 0,
                 paid_amount = 0,
                 admission_fees = 0,
-                #rever este status
+                training_start = datetime.time(0, 0, 0) ,
+                training_end = datetime.time(23, 59, 59),
+                #TODO rever este status
                 status = 'U'
             )
             membermembership.save()
             
             messages.success(request, 'Member was successfully added')
 
-            return render(request, template, {
-                'form': MemberForm(request.POST,request=request)
-            })
-
+            return HttpResponseRedirect(reverse('all-members'))
     return render(request, template, {
         'form': MemberForm(request=request)
     })
 
 @login_required(login_url='/login',redirect_field_name=None)
 def all_members(request):
-    members = Members.objects.all()
+    members = Member.objects.all()
     paginator = Paginator(members, 50)
     page_num = request.GET.get('page')
     page_obj = paginator.get_page(page_num)
@@ -237,7 +242,7 @@ def member_search(request):
     form = SearchForm(request.GET)
     if form.is_valid():
         query = form.cleaned_data['search']
-        search_member = Members.objects.filter(
+        search_member = Member.objects.filter(
             Q(first_name__icontains=query) | Q(last_name__icontains=query)
         ).order_by('first_name').all()
 
@@ -248,7 +253,7 @@ def member_search(request):
 
 def member_detail(request, id):
     template = "membership/member-detail.html"
-    member = Members.objects.get(pk=id)
+    member = Member.objects.get(pk=id)
     return render(request, template, {
         'member': member
     })
@@ -266,7 +271,7 @@ def edit(request):
     phone_number = data.get('phone', '')
     address = data.get('address', '')
 
-    member = Members.objects.get(pk=id)
+    member = Member.objects.get(pk=id)
     member.email = email
     member.age = age
     member.phone_number = phone_number
@@ -280,13 +285,13 @@ def edit(request):
 @login_required
 def remove(request,id):
     if request.method == "POST":
-        member = Members.objects.get(pk=id)
+        member = Member.objects.get(pk=id)
         member.delete()
         messages.success(request, 'Member was successfully deleted')
         return HttpResponseRedirect(reverse('all-members'))
     else:
         return render(request, "membership/remove-member.html",{
-            "member":Members.objects.get(pk=id)
+            "member":Member.objects.get(pk=id)
 
         })
         
@@ -300,7 +305,7 @@ def renew(request):
     id  = data.get('id','')
     date = data.get('date','')
     
-    member  = Members.objects.get(pk=id)
+    member  = Member.objects.get(pk=id)
     member.validity = date
     member.save()
     

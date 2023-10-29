@@ -3,90 +3,93 @@ from django import forms
 from django.forms import  DateInput, NumberInput, TextInput, EmailInput, ModelForm
 from requests import request
 
-from .models import MemberMembership, User, Membership,Members
+from .models import MemberMembership, Membership, Member, MembershipType, TrainingObjective
 
 
-class UserForm(ModelForm):
-    class Meta:
-        model = User
-        fields = ['username','first_name', 'last_name','email','personal_address','date_of_birth','phone_number', 'password']
-        style = 'max-width: 300px;'
-        widgets = {
-            'username': TextInput(attrs={
-                 'class':'form-control',
-                'style': style,
-                'placeholder': 'Username'
-            }),
-            'first_name': TextInput(attrs={
-                'class':'form-control',
-                'style': style,
-                'placeholder': 'First Name',
-            }),
-            
-            'last_name': TextInput(attrs={
-                'class':'form-control',
-                'style': style,
-                'placeholder': 'Last Name',
-            }),
-            
-            'email': EmailInput(attrs={
-                'class':'form-control',
-                'style': style,
-                'placeholder': 'Email',
-            }),
-            
-            'personal_address': TextInput(attrs={
-                'class':'form-control',
-                'style': style,
-                'placeholder': 'Personal Address',
-            }),
-            
-            'date_of_birth': forms.DateInput(attrs={
-                'type': 'date', 
-                'class':'form-control', 
-                'style': style, 
-                'placeholder': 'Date of Birth'}),
-                 
-                 
-            'phone_number': TextInput(attrs={
-                'class':'form-control',
-                'style': style,
-                'placeholder': 'Phone Number',
-            }),
-            
-            'gender': forms.Select(choices=(("Male","Male"),("Female","Female"),("Other","Other")),
-                                   attrs={
-                                       'class':'form-control','style': style}),
-            
-            'password': forms.PasswordInput(attrs={
-                'class':'form-control',
-                'style': style,
-                'placeholder': 'Password',
-            })
-            
-        }
-    
+#class UserForm(ModelForm):
+#    class Meta:
+#        model = User
+#        fields = ['username','first_name', 'last_name','email','personal_address','date_of_birth','phone_number', 'password']
+#        style = 'max-width: 300px;'
+#        widgets = {
+#            'username': TextInput(attrs={
+#                 'class':'form-control',
+#                'style': style,
+#                'placeholder': 'Username'
+#            }),
+#            'first_name': TextInput(attrs={
+#                'class':'form-control',
+#                'style': style,
+#                'placeholder': 'First Name',
+#            }),            
+#            'last_name': TextInput(attrs={
+#                'class':'form-control',
+#                'style': style,
+#                'placeholder': 'Last Name',
+#            }),            
+#            'email': EmailInput(attrs={
+#                'class':'form-control',
+#                'style': style,
+#                'placeholder': 'Email',
+#            }),            
+#            'personal_address': TextInput(attrs={
+#                'class':'form-control',
+#                'style': style,
+#                'placeholder': 'Personal Address',
+#            }),            
+#            'date_of_birth': forms.DateInput(attrs={
+#                'type': 'date', 
+#                'class':'form-control', 
+#                'style': style, 
+#                'placeholder': 'Date of Birth'
+#            }),                 
+#            'phone_number': TextInput(attrs={
+#                'class':'form-control',
+#                'style': style,
+#                'placeholder': 'Phone Number',
+#            }),            
+#            'gender': forms.Select(choices=(
+#                    ("Male","M"),("Female","F"),("Other","O")
+#                ),
+#                attrs={
+#                    'class':'form-control','style': style
+#            }),            
+#            'password': forms.PasswordInput(attrs={
+#                'class':'form-control',
+#                'style': style,
+#                'placeholder': 'Password',
+#            })            
+#        }
+   
     
 class MembershipForm(ModelForm):
+    type = forms.ModelChoiceField(queryset=MembershipType.objects.filter(active=True), widget=forms.Select)
+    type.widget.attrs.update({'class': 'form-control'})
+    
     class Meta:
         model = Membership
-        fields = ['membership_type', 'membership_duration', 'membership_price']
+        fields = ['name', 'type', 'duration', 'price']
         style = 'max-width: 300px;'
         widgets = {
-            'membership_type':TextInput(attrs={
+            'name':TextInput(attrs={
                'class':'form-control',
                'style': style,
-               'placeholder': 'Type',
+               'placeholder': 'Name',
             }),
+            #'type':TextInput(attrs={
+            #   'class':'form-control',
+            #   'style': style,
+            #   'placeholder': 'Type',
+            #}),
             
-            'membership_duration':NumberInput(attrs={
+            'duration':NumberInput(attrs={
                'class':'form-control',
                'style': style,
                'placeholder': 'Duration',
                'pattern':'[0-9]',
             }),
              
-            'membership_price':NumberInput(attrs={
+            'price':NumberInput(attrs={
                'class':'form-control',
                'style': style,
                'placeholder': 'Price',
@@ -95,16 +98,25 @@ class MembershipForm(ModelForm):
         
         
 class MemberForm(ModelForm):
-    membership = forms.ModelChoiceField(queryset=Membership.objects.all(), widget=forms.Select)
+    membership = forms.ModelChoiceField(
+        queryset=Membership.objects.all(), 
+        widget=forms.Select
+    )
     membership.widget.attrs.update({'class': 'form-control'})
+
+    training_objectives = forms.ModelMultipleChoiceField(
+        queryset = TrainingObjective.objects.filter(active=True).order_by('descricao'),
+        widget=forms.CheckboxSelectMultiple,
+        required=True 
+    )
     
     def __init__(self,*args,**kwargs):
         self.request = kwargs.pop("request")
         super(MemberForm,self).__init__(*args,**kwargs)
 
     class Meta:
-        model = Members
-        fields = ['first_name', 'last_name', 'email', 'phone_number', 'age', 'gender', 'address', 'membership']
+        model = Member
+        fields = ['first_name', 'last_name', 'email', 'phone_number', 'date_of_birth', 'gender', 'address', 'membership','training_objectives']
   
         style = 'max-width: 300px;'
         widgets = {
@@ -130,11 +142,12 @@ class MemberForm(ModelForm):
                 'style': style,
                 'placeholder': 'Phone Number',
             }),
-            'age': TextInput(attrs={
-                'class':'form-control',
-                'style': style,
-                'placeholder': 'Age',
-            }),
+            'date_of_birth': forms.DateInput(attrs={
+                'type': 'date', 
+                'class':'form-control', 
+                'style': style, 
+                'placeholder': 'Date of Birth'
+            }),  
             'gender': forms.Select(choices=(("Male","Male"),("Female","Female"),("Other","Other")),
                                 attrs={
                                     'class':'form-control','style': style}),

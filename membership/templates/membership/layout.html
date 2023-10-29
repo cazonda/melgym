@@ -8,6 +8,15 @@
       name="viewport"
       content="width=device-width, initial-scale=1, shrink-to-fit=no"
     />
+    <link rel="icon" type="image/x-icon" href="{% static 'Membership/ico/favicon.ico'%}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'Membership/ico/apple-touch-icon.png'%}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'Membership/ico/favicon-32x32.png'%}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'Membership/ico/favicon-16x16.png'%}">
+    <link rel="manifest" href="{% static 'Membership/ico/site.webmanifest'%}">
+    <link rel="mask-icon" href="{% static 'Membership/ico/safari-pinned-tab.svg'%}" color="#5bbad5">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="theme-color" content="#000000">
+
     <link
       rel="stylesheet"
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
@@ -87,7 +96,7 @@
               <a href="{% url 'all-members' %}" class="nav-link">Members</a>
             </li>        
             <!--li class="nav-item">
-              <a href="{% url 'add-members' %}" class="nav-link">Add Members</a>
+              <a href="{% url 'add-member' %}" class="nav-link">Add Members</a>
             </li-->
             <li class="nav-item">
               <a href="{% url 'membership' %}" class="nav-link">Membership Plans</a>
@@ -108,9 +117,7 @@
                 <a class="dropdown-item" href="{% url 'logout'  %}">Logout</a>
                 {% else %}
                 <a class="dropdown-item" href="{% url 'login' %}">Login</a>
-                <a class="dropdown-item" href="{% url 'register' %}"
-                  >Register</a
-                >
+                
                 {% endif %}
               </div>
             </li>

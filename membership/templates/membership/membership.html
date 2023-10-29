@@ -24,7 +24,7 @@
 
 <table class="table table-hover">
     <tr>
-        <th>Type</th>
+        <th>Name</th>    
         <th>Duration</th>
         <th>Price</th>
     </tr>
@@ -32,7 +32,7 @@
     <tr>
         <td>
             <div class="btn-group">
-                <button type="button" class="btn btn-secondary">{{plan.membership_type}}</button>
+                <button type="button" class="btn btn-secondary">{{plan.name}}</button>
                 <button type="button" class="btn btn-secondary dropdown-toggle dropdown-toggle-split"
                     data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     <span class="sr-only">Toggle Dropdown</span>
@@ -44,12 +44,12 @@
                 </div>
             </div>
         </td>
-        {% if plan.membership_duration > 1 %}
-            <td>{{plan.membership_duration}} days</td>
+        {% if plan.duration > 1 %}
+            <td>{{plan.duration}} days</td>
         {% else %}
-            <td>{{plan.membership_duration}} day</td>
+            <td>{{plan.duration}} day</td>
         {% endif %}
-       <td><span id="price-{{plan.id}}">{{plan.membership_price}} MZN</span></td>
+       <td><span id="price-{{plan.id}}">{{plan.price}} MZN</span></td>
 
     </tr>
     {% empty %}
@@ -89,13 +89,16 @@
     <form action="{% url 'membership' %}" method="post" id="form-div">
         {% csrf_token %}
         <div class="form-group">
-            {{form.membership_type}}
+            {{form.name}}
         </div>
         <div class="form-group">
-            {{form.membership_duration}}
+            {{form.type}}
         </div>
         <div class="form-group">
-            {{form.membership_price}}
+            {{form.duration}}
+        </div>
+        <div class="form-group">
+            {{form.price}}
         </div>
         <div class="form-group">
             <input type="submit" class="btn btn-primary btn-sm" value = "Add Membership">

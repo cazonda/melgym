@@ -1,22 +1,24 @@
 from django.contrib import admin
-from .models import User, Membership, Members
+from .models import TrainingObjective, MembershipType
 
+@admin.register(TrainingObjective)
+class TrainingObjectiveAdmin(admin.ModelAdmin):
+    list_display = ('active', 'id', 'codigo', 'descricao', 'create_user')
+    exclude = ('create_user','update_user')
 
-#class UserAdmin(admin.ModelAdmin):
-#    list_display = ('username', 'first_name', 'last_name', 'email',
-#                    'phone_number', 'gym_name', 'gym_location', 'gym_phone')
+    def save_model(self, request, obj, form, change):
+        if not getattr(obj, 'create_user'):
+            obj.create_user = request.user.username
+        obj.update_user = request.user.username
+        obj.save()
 
+@admin.register(MembershipType)
+class MembershipTypeAdmin(admin.ModelAdmin):
+    list_display = ('active', 'id', 'codigo', 'descricao', 'create_user')
+    exclude = ('create_user','update_user')
 
-#class MembershipAdmin(admin.ModelAdmin):
-#    list_display = ('user', 'membership_type',
-#                    'membership_duration', 'membership_price')
-
-
-#class MemberAdmin(admin.ModelAdmin):
-#    list_display = ('first_name', 'last_name', 'email', 'phone_number',
-#                    'age', 'gender', 'address', 'membership', 'validity')
-
-
-#admin.site.register(User, UserAdmin)
-#admin.site.register(Membership, MembershipAdmin)
-#admin.site.register(Members, MemberAdmin)
+    def save_model(self, request, obj, form, change):
+        if not getattr(obj, 'create_user'):
+            obj.create_user = request.user
+        obj.update_user = request.user.username
+        obj.save()

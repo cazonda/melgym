@@ -8,6 +8,6 @@
 <h2>Home</h2>
 {% if user.is_authenticated %}
 <a href="{% url 'membership' %}">Add Membership Plans</a>
-<a href="{% url 'add-members' %}">Add Members</a>
+<a href="{% url 'add-member' %}">Add Members</a>
 {% endif %}
 {% endblock %}

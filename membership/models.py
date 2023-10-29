@@ -1,40 +1,60 @@
-from django.contrib.auth.models import AbstractUser
 from django.db.models import Sum
 from django.db import models
 from datetime import date
 
-class User(AbstractUser):
-    personal_address = models.CharField(max_length=100, blank=False)
-    date_of_birth = models.DateField()
-    phone_number = models.CharField(max_length=20, blank=False)
+#class User(AbstractUser):
+#    personal_address = models.CharField(max_length=100, blank=False)
+#    date_of_birth = models.DateField()
+#    phone_number = models.CharField(max_length=20, blank=False)
 
+class Base(models.Model):
+    create_date = models.DateTimeField(auto_now_add=True)
+    create_user =  models.CharField(max_length=255)
+    update_date = models.DateTimeField(auto_now_add=True)
+    update_user = models.CharField(max_length=255)
+    active = models.BooleanField(default=True)
 
-class Membership(models.Model):
-    #TODO add membership_name
-    #TODO criar classe membership_type(online, presencial, geral, personalizado, etc)
-    #TODO remover 'membership_' dos atributos
-    membership_type = models.CharField(max_length=100, blank=False)
-    membership_price = models.DecimalField(max_digits=20, decimal_places=2)
+    class Meta:
+        abstract = True
+
+class ParCodigoDescricao(Base):
+    codigo = models.CharField(max_length=10)
+    descricao = models.CharField(max_length=100, blank=False)
+
+    def __str__(self) -> str:
+        return str(self.descricao)
+
+    class Meta:
+        abstract = True
+
+class MembershipType(ParCodigoDescricao):
+    pass
+
+class TrainingObjective(ParCodigoDescricao):
+    pass
+
+class Membership(Base):
+    name = models.CharField(max_length=100, blank=False)
+    type = models.ForeignKey(MembershipType, models.DO_NOTHING)
+    price = models.DecimalField(max_digits=20, decimal_places=2)
     #duration in days
-    membership_duration = models.SmallIntegerField()
-    
+    duration = models.SmallIntegerField()    
 
     def __str__(self):
-        if self.membership_duration == 1 :
-            return f"{self.membership_type} for {self.membership_duration} day"
+        if self.duration == 1 :
+            return f"{self.name} for {self.duration} day"
         else:
-            return f"{self.membership_type} for {self.membership_duration} days"
+            return f"{self.name} for {self.duration} days"
 
-
-class Members(models.Model):
-    #TODO o nome deve ser Member
+class Member(Base):
     first_name = models.CharField(max_length=100, blank=False)
     last_name = models.CharField(max_length=100, blank=False)
     email = models.EmailField(max_length=100, blank=False)
-    age = models.IntegerField(blank=False)
+    date_of_birth = models.DateField()
     gender = models.CharField(max_length=10, blank=False)
     phone_number = models.CharField(max_length=20, blank=False)
     address = models.CharField(max_length=100, blank=False)
+    training_objectives = models.ManyToManyField(TrainingObjective)
     membership = models.ManyToManyField(Membership, through = 'membership.MemberMembership')
 
     def latest_membership(self):        
@@ -58,7 +78,6 @@ class Members(models.Model):
         due = total_amount + admission_fees - discount - paid_amount
         return f'{due} MZN'
 
-
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 
@@ -66,15 +85,17 @@ class Members(models.Model):
         return date.today() < self.latest_membership().expiry_date()
     
 
-class MemberMembership(models.Model):
+class MemberMembership(Base):
     membership = models.ForeignKey(Membership, models.DO_NOTHING)
-    member = models.ForeignKey(Members, models.DO_NOTHING)
+    member = models.ForeignKey(Member, models.DO_NOTHING)
     purchase_date = models.DateField()
     expiry_date = models.DateField()
     total_amount = models.DecimalField(max_digits=20, decimal_places=2)
     discount = models.DecimalField(max_digits=20, decimal_places=2)
     paid_amount = models.DecimalField(max_digits=20, decimal_places=2)
     admission_fees = models.DecimalField(max_digits=20, decimal_places=2)
+    training_start = models.TimeField() 
+    training_end = models.TimeField()     
     #(U)npaid, (I)ncomplete, (P)aid
     status = models.CharField(max_length=2, blank=False)
 
@@ -85,10 +106,4 @@ class MemberMembership(models.Model):
         return self.expiry_date < date.today()
 
     def __str__(self):
-        return f'{self.membership.membership_type} until {self.expiry_date}'
-
-
-class Payment(models.Model):
-    payment_date = models.DateField()
-    payment_amount = models.DecimalField(max_digits=20, decimal_places=2)
-    member_membership = models.ForeignKey(MemberMembership, on_delete=models.CASCADE)
+        return f'{self.membership.type} until {self.expiry_date}'
