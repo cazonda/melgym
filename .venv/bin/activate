@@ -67,3 +67,5 @@ fi
 if [ -n "${BASH:-}" -o -n "${ZSH_VERSION:-}" ] ; then
     hash -r 2> /dev/null
 fi
+
+export DATABASE_URL=postgres://postgres:postgres@localhost:5432/melgym

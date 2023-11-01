@@ -1,5 +1,3 @@
-import re
-from tkinter import Widget
 from attr import attr
 from decimal import Decimal
 from django import forms

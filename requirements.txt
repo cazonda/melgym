@@ -9,6 +9,7 @@ charset-normalizer==2.0.12
 colorama==0.4.4
 cryptography==37.0.2
 dill==0.3.5.1
+dj-database-url==2.1.0
 Django==4.0.4
 django-livesync==0.5
 et-xmlfile==1.1.0
@@ -25,6 +26,7 @@ outcome==1.1.0
 pexpect==4.8.0
 Pillow==9.1.1
 platformdirs==2.5.2
+psycopg2-binary==2.9.9
 ptyprocess==0.7.0
 pycodestyle==2.8.0
 pycparser==2.21
