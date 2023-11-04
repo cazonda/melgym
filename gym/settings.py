@@ -14,6 +14,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 import os
 import dj_database_url
+import mimetypes
+
 
 load_dotenv()
 
@@ -138,3 +140,5 @@ STATICFILES_DIRS = (
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CSRF_TRUSTED_ORIGINS = ['https://*.casco.co.mz','https://*.127.0.0.1']
+
+mimetypes.add_type("text/css", ".css", True)
