@@ -106,4 +106,4 @@ class MemberMembership(Base):
         return self.expiry_date < date.today()
 
     def __str__(self):
-        return f'{self.membership.type} until {self.expiry_date}'
+        return f'{self.membership.name} until {self.expiry_date}'

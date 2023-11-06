@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import TrainingObjective, MembershipType
+from .models import MemberMembership, TrainingObjective, MembershipType
 
 @admin.register(TrainingObjective)
 class TrainingObjectiveAdmin(admin.ModelAdmin):
@@ -22,3 +22,9 @@ class MembershipTypeAdmin(admin.ModelAdmin):
             obj.create_user = request.user
         obj.update_user = request.user.username
         obj.save()
+
+@admin.register(MemberMembership)
+class MembershipTypeAdmin(admin.ModelAdmin):
+    list_display = ('member', 'purchase_date', 'expiry_date')
+    exclude = ('create_user','update_user')
+    pass

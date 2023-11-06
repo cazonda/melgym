@@ -226,7 +226,7 @@ def add_member(request):
 
 @login_required(login_url='/login',redirect_field_name=None)
 def all_members(request):
-    members = Member.objects.all()
+    members = Member.objects.filter(active = True).order_by('first_name').all()
     paginator = Paginator(members, 50)
     page_num = request.GET.get('page')
     page_obj = paginator.get_page(page_num)
@@ -241,7 +241,8 @@ def member_search(request):
     if form.is_valid():
         query = form.cleaned_data['search']
         search_member = Member.objects.filter(
-            Q(first_name__icontains=query) | Q(last_name__icontains=query)
+            Q(first_name__icontains=query) | Q(last_name__icontains=query),
+            active = True
         ).order_by('first_name').all()
 
         return render(request, 'membership/member-search-results.html', {
@@ -284,7 +285,8 @@ def edit(request):
 def remove(request,id):
     if request.method == "POST":
         member = Member.objects.get(pk=id)
-        member.delete()
+        member.active = False
+        member.save()
         messages.success(request, 'Member was successfully deleted')
         return HttpResponseRedirect(reverse('all-members'))
     else:
