@@ -11,12 +11,15 @@ from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 import json
+from django.core.mail import EmailMessage, get_connection
+from django.conf import settings
 
 from membership.utils import calc_membership_expiry_date
 from .models import MemberMembership, Membership, Member
 from .forms import MemberMembershipForm, MembershipForm, MemberForm, SearchForm
 import datetime 
 from datetime import date
+from django.template.loader import render_to_string
 
 
 def index(request):
@@ -219,6 +222,18 @@ def add_member(request):
             
             messages.success(request, 'Member was successfully added')
 
+            template = render_to_string('membership/email_template.html', {"name": form.cleaned_data['first_name']})
+
+            emaily = EmailMessage(
+                'Pague sua subscrição',
+                template,
+                settings.EMAIL_HOST_USER, 
+                [form.cleaned_data['email']]
+            )
+
+            emaily.fail_silently=False
+            emaily.send()
+
             return HttpResponseRedirect(reverse('all-members'))
     return render(request, template, {
         'form': MemberForm(request=request)
@@ -335,3 +350,4 @@ def remove_plan(request,id):
         membership.delete()
         messages.success(request, 'Membership plan was successfully deleted')
         return HttpResponseRedirect(reverse('membership'))
+    
