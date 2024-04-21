@@ -30,3 +30,7 @@ COPY . .
 #RUN python manage.py makemigrations
 #RUN python manage.py migrate
 #RUN python manage.py createsuperuser --noinput || True
+
+
+# RUN python -m celery -A gym.celery worker --pool=solo -l info
+# RUN python -m celery -A gym.celery beat -l info

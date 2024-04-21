@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import MemberMembership, TrainingObjective, MembershipType
+from .models import MemberMembership, TrainingObjective, MembershipType, Preferences
 
 @admin.register(TrainingObjective)
 class TrainingObjectiveAdmin(admin.ModelAdmin):
@@ -26,5 +26,11 @@ class MembershipTypeAdmin(admin.ModelAdmin):
 @admin.register(MemberMembership)
 class MembershipTypeAdmin(admin.ModelAdmin):
     list_display = ('member', 'purchase_date', 'expiry_date')
+    exclude = ('create_user','update_user')
+    pass
+
+@admin.register(Preferences)
+class MembershipTypeAdmin(admin.ModelAdmin):
+    list_display = ('messageType', 'subject', 'message')
     exclude = ('create_user','update_user')
     pass

@@ -11,9 +11,9 @@ from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 import json
-from django.core.mail import EmailMessage, get_connection
+from django.core.mail import send_mail
 from django.conf import settings
-
+from .models import Preferences 
 from membership.utils import calc_membership_expiry_date
 from .models import MemberMembership, Membership, Member
 from .forms import MemberMembershipForm, MembershipForm, MemberForm, SearchForm
@@ -132,6 +132,9 @@ def renew_membership(request, id):
             member_membership.save()
             
             messages.success(request, 'Membership was successfully renewed')
+
+            send_email(messageType="RENEWAL", member=member)
+
             return HttpResponseRedirect(reverse('member-detail', args=(id,)))
             #return render(request, template, {
             #    'form': MemberMembershipForm(request.POST,request=request),
@@ -143,6 +146,7 @@ def renew_membership(request, id):
                 'form': MemberMembershipForm(request.POST,request=request),
                 'member_id': id,
             })
+        
     
     return render(request, template, {
         'form': MemberMembershipForm(request=request, initial = {
@@ -174,10 +178,14 @@ def pay_membership(request):
     member_membership.save()
 
     messages.success(request, 'Membership was successfully paid.')
+
+    send_email(messageType="PAYMENT", member=member_membership.member)
+
     return HttpResponseRedirect(reverse('member-detail', args=(id)))
 
 @transaction.atomic
 def add_member(request):
+
     template = 'membership/add-member.html'
     if request.method == "POST":
         form = MemberForm(request.POST,request=request)
@@ -222,17 +230,7 @@ def add_member(request):
             
             messages.success(request, 'Member was successfully added')
 
-            template = render_to_string('membership/email_template.html', {"name": form.cleaned_data['first_name']})
-
-            emaily = EmailMessage(
-                'Pague sua subscrição',
-                template,
-                settings.EMAIL_HOST_USER, 
-                [form.cleaned_data['email']]
-            )
-
-            emaily.fail_silently=False
-            emaily.send()
+            send_email(messageType="WELCOME", member=member)
 
             return HttpResponseRedirect(reverse('all-members'))
     return render(request, template, {
@@ -324,6 +322,7 @@ def renew(request):
     member.validity = date
     member.save()
     
+
     messages.success(request, 'Membership validity was successfully renewed.')
     return HttpResponseRedirect(reverse('member-detail', args=(id)))
 
@@ -351,3 +350,19 @@ def remove_plan(request,id):
         messages.success(request, 'Membership plan was successfully deleted')
         return HttpResponseRedirect(reverse('membership'))
     
+def send_email(messageType, member):
+    try:
+        preferences = Preferences.objects.filter(messageType=messageType).first()
+        subject = preferences.subject
+        message = preferences.message.format(member_first_name=member.first_name)
+    except Preferences.DoesNotExist:
+        subject = f'{messageType}'
+        message = 'null'
+
+    send_mail(
+        subject,
+        message,
+        settings.EMAIL_HOST_USER, 
+        [member.email],
+        fail_silently=False
+    )

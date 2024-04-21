@@ -107,3 +107,10 @@ class MemberMembership(Base):
 
     def __str__(self):
         return f'{self.membership.name} until {self.expiry_date}'
+    
+
+
+class Preferences(Base):
+    messageType = models.CharField(max_length=100, blank=False)
+    subject = models.CharField(max_length=100, blank=False)
+    message = models.TextField(blank=False)
