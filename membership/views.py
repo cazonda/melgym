@@ -20,25 +20,47 @@ from .forms import MemberMembershipForm, MembershipForm, MemberForm, SearchForm
 import datetime 
 from datetime import date
 from django.template.loader import render_to_string
+from django.http import JsonResponse
+
 
 
 def index(request):
     return render(request, 'membership/index.html')
 
-
 def login_view(request):
     if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
+        # Check if the request is from an API client (e.g., React Native)
+        if request.content_type == 'application/json':
+            data = json.loads(request.body)
+            username = data.get('username')
+            password = data.get('password')
+        else:
+            # Handle form submission from web client
+            username = request.POST.get('username')
+            password = request.POST.get('password')
+
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return HttpResponseRedirect(reverse('index'))
+            if request.content_type == 'application/json':
+                user = {
+                    "username": request.user.username,
+                    "name": request.user.first_name,
+                    "email": request.user.email
+                }
+                return JsonResponse(user)
+            else:
+                return HttpResponseRedirect(reverse('index'))
         else:
-            return render(request, 'membership/login.html',
-                          {'message': 'Invalid username and password'})
+            if request.content_type == 'application/json':
+                return JsonResponse({'status': 'error', 'message': 'Invalid username or password'}, status=401)
+            else:
+                return render(request, 'membership/login.html', {'message': 'Invalid username and password'})
 
-    return render(request, 'membership/login.html')
+    if request.content_type == 'application/json':
+        return JsonResponse({'status': 'error', 'message': 'Only POST method is allowed'}, status=405)
+    else:
+        return render(request, 'membership/login.html')
 
 
 def logout_view(request):
@@ -82,7 +104,11 @@ def membership(request):
     plans = Membership.objects.all().order_by('type','price')
     template = 'membership/membership.html'
     if request.method == 'POST':
-        form = MembershipForm(request.POST)
+        if request.content_type == 'application/json':
+            data = json.loads(request.body)
+            form = MembershipForm(data)
+        else:
+            form = MembershipForm(request.POST)
         if form.is_valid():
             name = form.cleaned_data['name']
             type = form.cleaned_data['type']
@@ -94,15 +120,22 @@ def membership(request):
             
             messages.success(request, 'The membership plan was successfully added')
 
-            return render(request, template, {
-                'form': MembershipForm(),
-                'plans':plans
-            })
+            if request.content_type == 'application/json':
+                return JsonResponse({'status': 'success', 'membership_id': membership.id}, status=201)
+            else:
+                return render(request, template, {
+                    'form': MembershipForm(),
+                    'plans':plans
+                })
 
-    return render(request, template, {
-        'form': MembershipForm(),
-        'plans':plans
-    })
+    if request.content_type == 'application/json':
+        plans_data = list(plans.values('id', 'name', 'type', 'duration', 'price'))
+        return JsonResponse(plans_data, safe=False)
+    else:
+        return render(request, template, {
+            'form': MembershipForm(),
+            'plans': plans
+        })
 
 
 def renew_membership(request, id):
@@ -188,7 +221,14 @@ def add_member(request):
 
     template = 'membership/add-member.html'
     if request.method == "POST":
-        form = MemberForm(request.POST,request=request)
+        # Check if the request is from an API client (e.g., React Native)
+        if request.content_type == 'application/json':
+            data = json.loads(request.body)
+            print(data)
+            form = MemberForm(data, request=request)
+        else:
+            # Handle form submission from web client
+            form = MemberForm(request.POST,request=request)
         if form.is_valid():
             first_name = form.cleaned_data['first_name']
             last_name = form.cleaned_data['last_name']
@@ -232,7 +272,22 @@ def add_member(request):
 
             send_email(messageType="WELCOME", member=member)
 
-            return HttpResponseRedirect(reverse('all-members'))
+            if request.content_type == 'application/json':
+                # Return JSON response for API clients
+                return JsonResponse({'status': 'success', 'member_id': member.id}, status=201)
+            else:
+                # Redirect for web clients
+                return HttpResponseRedirect(reverse('all-members'))
+        else:
+            if request.content_type == 'application/json':
+                # Return JSON response with errors for API clients
+                errors = form.errors.as_json()
+                return JsonResponse({'status': 'error', 'errors': errors}, status=400)
+            else:
+                # Render form with errors for web clients
+                return render(request, template, {
+                    'form': form
+                })
     return render(request, template, {
         'form': MemberForm(request=request)
     })
@@ -243,10 +298,14 @@ def all_members(request):
     paginator = Paginator(members, 50)
     page_num = request.GET.get('page')
     page_obj = paginator.get_page(page_num)
-    return render(request, 'membership/all-members.html', {
-        'page_obj': page_obj,
-        'form': SearchForm()
-    })
+    if request.headers.get('Accept') == 'application/json':
+        members_list = list(page_obj.object_list.values())
+        return JsonResponse(members_list, safe=False)
+    else:
+        return render(request, 'membership/all-members.html', {
+            'page_obj': page_obj,
+            'form': SearchForm()
+        })
 
 
 def member_search(request):
