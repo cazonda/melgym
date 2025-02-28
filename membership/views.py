@@ -13,10 +13,11 @@ from django.contrib import messages
 import json
 
 from membership.utils import calc_membership_expiry_date
-from .models import MemberMembership, Membership, Member
+from .models import Attendance, MemberMembership, Membership, Member
 from .forms import MemberMembershipForm, MembershipForm, MemberForm, SearchForm
 import datetime 
 from datetime import date
+import time
 
 
 def index(request):
@@ -126,6 +127,12 @@ def renew_membership(request, id):
                 admission_fees = 0,
                 status = 'U'
             )
+            if member_membership.paid_amount == 0:
+                member_membership.status = 'U'
+            elif member_membership.due_amount() > 0:
+                member_membership.status = 'I'
+            else:
+                member_membership.status = 'P'
             member_membership.save()
             
             messages.success(request, 'Membership was successfully renewed')
@@ -164,12 +171,13 @@ def pay_membership(request):
     member_membership = MemberMembership.objects.get(pk = id)
     member_membership.discount = Decimal(discount)
     member_membership.paid_amount = member_membership.paid_amount + Decimal(paid_amount)
+    
     if member_membership.due_amount() > 0:
         member_membership.status = 'I'
     else:
         member_membership.status = 'P'
     member_membership.save()
-
+    
     messages.success(request, 'Membership was successfully paid.')
     return HttpResponseRedirect(reverse('member-detail', args=(id)))
 
@@ -257,28 +265,33 @@ def member_detail(request, id):
         'member': member
     })
 
+def member_attendance(request, id):
+    template = "membership/member-attendance.html"
+    member = Member.objects.get(pk=id)
+    return render(request, template, {
+        'member': member
+    })
+
 
 @login_required
-def edit(request):
-    if request.method != 'POST':
-        JsonResponse({'error': 'Invalid request'})
-
-    data = json.loads(request.body)
-    id = data.get('id','')
-    email = data.get('email', '')
-    age = data.get('age', '')
-    phone_number = data.get('phone', '')
-    address = data.get('address', '')
-
+def edit_member(request, id):
+    template = "membership/edit-member.html"
     member = Member.objects.get(pk=id)
-    member.email = email
-    member.age = age
-    member.phone_number = phone_number
-    member.address = address
-    member.save()
-    messages.success(request, 'Member detail was successfully edited. Please reload the page to view the change.')
-
-    return HttpResponseRedirect(reverse('member-detail', args=(id,)))
+    
+    if request.method == 'POST':        
+        form = MemberForm(request=request, instance = member)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Member successfully edited.')
+            return HttpResponseRedirect(reverse('member-detail', args=(id,)))
+        else:
+            messages.error(request, 'Please correct the following errors:')
+            return render(request, template, {'form' : form, 'id': id})
+        
+    return render(request, template, {
+        'form': MemberForm(request=request, instance = member),
+        'id': id
+    })
 
 
 @login_required
@@ -292,7 +305,6 @@ def remove(request,id):
     else:
         return render(request, "membership/remove-member.html",{
             "member":Member.objects.get(pk=id)
-
         })
         
 
@@ -312,8 +324,6 @@ def renew(request):
     messages.success(request, 'Membership validity was successfully renewed.')
     return HttpResponseRedirect(reverse('member-detail', args=(id)))
 
-
-
 def edit_price(request):
     if request.method != 'POST':
         return JsonResponse({'error':'Invalid Request'})
@@ -326,12 +336,34 @@ def edit_price(request):
     membership.membership_price = new_price
     membership.save()
     
-    
-    
 @login_required
-def remove_plan(request,id):
+def remove_plan(request, id):
     if request.method == "POST":
         membership = Membership.objects.get(pk=id)
         membership.delete()
         messages.success(request, 'Membership plan was successfully deleted')
         return HttpResponseRedirect(reverse('membership'))
+    
+@login_required
+def punch_member_in_or_out(request):
+    if request.method != 'POST':
+        return JsonResponse({'error':'Invalid Request'})
+    
+    data = json.loads(request.body)
+    id = data.get('id','')  
+    member = Member.objects.get(id = id)
+    attendances = Attendance.objects.filter(member = member, attendance_date = date.today())
+    if not attendances:
+        attendance = Attendance(member=member)
+        movement = 'In'        
+    else:
+        attendance = attendances.order_by('id').last()
+        if not attendance.exit_time:
+            attendance.exit_time = datetime.datetime.now().strftime("%H:%M:%S")
+            movement = 'Out'
+        else:
+            attendance = Attendance(member=member)
+            movement = 'In'
+    attendance.save()
+    messages.success(request, "Check-{0} Registered".format(movement))
+    return HttpResponseRedirect(reverse('member-detail', args=(id)))

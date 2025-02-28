@@ -10,7 +10,7 @@ from datetime import date
 class Base(models.Model):
     create_date = models.DateTimeField(auto_now_add=True)
     create_user =  models.CharField(max_length=255)
-    update_date = models.DateTimeField(auto_now_add=True)
+    update_date = models.DateTimeField(auto_now=True)
     update_user = models.CharField(max_length=255)
     active = models.BooleanField(default=True)
 
@@ -63,6 +63,9 @@ class Member(Base):
     def latest_memberships(self):
         return MemberMembership.objects.filter(member_id = self.id).order_by('-id')
     
+    def attendances(self):
+        return Attendance.objects.filter(member=self).order_by('-id')
+    
     def due_amount(self):
         sum_dict = MemberMembership.objects.filter(member_id = self.id).aggregate(
             total_amount = Sum('total_amount'),
@@ -107,3 +110,10 @@ class MemberMembership(Base):
 
     def __str__(self):
         return f'{self.membership.name} until {self.expiry_date}'
+
+
+class Attendance(Base):
+    member = models.ForeignKey(Member, models.DO_NOTHING)
+    attendance_date = models.DateField(auto_now_add = True)
+    entrance_time = models.TimeField(auto_now_add = True)
+    exit_time = models.TimeField(null = True)

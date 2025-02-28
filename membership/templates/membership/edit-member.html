@@ -1,0 +1,63 @@
+{% extends "membership/layout.html" %}
+
+{% block title %} Melgym | Edit Member {% endblock %}
+
+{% block body %}
+
+<div id='member-form'>
+    <h2 style="text-align: center;">Edit Member</h2>
+
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</li>
+            {% endfor %}
+    </ul>
+    {% endif %}
+
+    <div class="d-flex justify-content-center">
+
+        <form action="{% url 'edit-member' id %}" method="post">
+            {% csrf_token %}
+
+            <div class="form-group">
+                {{form.first_name}}
+            </div>
+            <div class="form-group">
+                {{form.last_name}}
+            </div>
+            <div class="form-group">
+                {{form.email}}
+            </div>
+            <div class="form-group">
+                {{form.phone_number}}
+            </div>
+            <label for="date_of_birth" style="display: inline-block;">Date Of Birth</label>
+            <div class="form-group">
+                {{form.date_of_birth}}
+            </div>
+            <label for="gender" style="display: inline-block;">Gender</label>
+            <div class="form-group" style="display: inline-block;">
+                {{form.gender}}
+            </div>
+
+            <div class="form-group">
+                {{form.address}}
+            </div>
+
+            <label for="membership" style="display: inline-block;">Membership Plan</label>
+            <div class="form-group">
+                {{form.membership}}
+            </div>
+            <label for="training_objectives" style="display: inline-block;">Objective(s)</label>
+            <div class="form-group">
+                {{form.training_objectives}}
+            </div>            
+
+            <div class="form-group">
+                <input class="btn btn-primary" type="submit" value="Edit Member">
+            </div>
+        </form>
+    </div>
+
+    {% endblock %}

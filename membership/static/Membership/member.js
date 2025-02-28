@@ -1,8 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const element = document.querySelector('#edit-member');
+  const element = document.querySelector('#punch');
   if(element){
     element.addEventListener('click', () => {
-      display_edit(element.dataset.id)
+      punch_member(element.dataset.id)
     });
   }
   
@@ -145,6 +145,21 @@ function editMember(id) {
     }),
     headers: { "X-CSRFToken": csrftoken },
 
+  })
+  window.location.reload(`${id}`);
+}
+
+
+function punch_member(id) {
+
+  let csrftoken = getCookie('csrftoken');
+
+  fetch('/punch-member', {
+    method: 'POST',
+    body: JSON.stringify({
+      id: id,
+    }),
+    headers: { "X-CSRFToken": csrftoken },
   })
   window.location.reload(`${id}`);
 }

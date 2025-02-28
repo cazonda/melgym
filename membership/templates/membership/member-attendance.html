@@ -1,6 +1,6 @@
 {% extends "membership/layout.html" %}
 {% load static %}
-{% block title %} Melgym | Member Detail {% endblock %}
+{% block title %} Melgym | Member Attendance History {% endblock %}
 
 {% block body %}
 
@@ -55,7 +55,7 @@
               <a type="button" href="{% url 'renew-membership' member.id %}" class="btn btn-dark" data-id="{{member.id}}" id="renew">
                 <span class="fa fa-retweet"></span>
               </a>              
-              <a type="button" href="{% url 'member-attendance' member.id %}" class="btn btn-dark" data-id="{{member.id}}" id="member_attendance">
+              <a type="button" class="btn btn-dark" data-id="{{member.id}}" id="member_memberships">
                 <span class="fa fa-scroll"></span>
               </a>
               <a type="button" href="{% url 'edit-member' member.id %}" class="btn btn-primary" id="edit_member">
@@ -72,28 +72,15 @@
             <div class="card-body">
               <div id="member-details">
                 <table class="table table-hover">
-                    {% for membership in member.latest_memberships %} 
+                    {% for attendance in member.attendances %} 
                         <tr>
                           <td>
-                            <p class="mb-0"><strong>{{membership}}</strong></p>
+                            <p class="mb-0"><strong>{{attendance.attendance_date}}</strong></p>
                             <small class="text-muted">
-                              <strong>DUE:</strong> {{membership.due_amount}}, 
-                              <strong>PAID:</strong> {{membership.paid_amount}},
-                              <strong>DIS.:</strong> {{membership.discount}}
+                              <strong>Check-In:</strong> {{attendance.entrance_time}}, 
+                              <strong>Check-Out:</strong> {{attendance.exit_time}}
                             </small>  
                           </td>
-                          {% if membership.due_amount > 0 %}
-                            <td>
-                              <button type="button" class="btn btn-dark" id="pay-membership" data-id="{{membership.id}}">
-                                <span class="fa fa-sack-dollar"></span>
-                              </button>
-                            </td>
-                          {% else %}
-                            <td><i class="fa fa-check-double fa-2xl" style="color: #28a745;"></i></td>  
-                          {% endif %}
-                        </tr>
-                        {% empty %}
-                        <p>No results to show</p>
                     {% endfor %}
                 </table>
               </div>
