@@ -23,5 +23,6 @@ COPY . .
 
 #RUN python manage.py collectstatic
 #RUN python manage.py makemigrations
+#hello delete me
 RUN python manage.py migrate
 #RUN python manage.py createsuperuser --noinput || True
