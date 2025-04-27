@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Confirmação de Pagamento</title>
+</head>
+<body>
+    <h2>Olá {{ member.first_name }},</h2>
+    <p>O seu pagamento foi processado com sucesso!</p>
+    
+    <h3>Detalhes do Pagamento:</h3>
+    <ul>
+        <li>Plano: {{ membership.membership.name }}</li>
+        <li>Valor Total: {{ membership.total_amount }}</li>
+        <li>Desconto: {{ membership.discount }}</li>
+        <li>Valor Pago: {{ membership.paid_amount }}</li>
+        <li>Data de Validade: {{ membership.expiry_date }}</li>
+    </ul>
+    
+    <p>Em anexo encontrará a fatura em formato PDF.</p>
+    
+    <p>Atenciosamente,<br>Equipa do Ginásio</p>
+</body>
+</html>

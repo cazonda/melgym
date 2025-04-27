@@ -145,3 +145,18 @@ CSRF_TRUSTED_ORIGINS = ['https://*.casco.co.mz','https://*.127.0.0.1']
 mimetypes.add_type("text/css", ".css", True)
 mimetypes.add_type("text/javascript", ".js", True)
 mimetypes.add_type("text/html", ".html", True)
+
+# Email configuration
+EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND')
+EMAIL_HOST = os.environ.get('EMAIL_HOST')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS') == 'True'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL')
+
+# Company information
+COMPANY_NAME = os.environ.get('COMPANY_NAME')
+COMPANY_ADDRESS = os.environ.get('COMPANY_ADDRESS')
+COMPANY_PHONE = os.environ.get('COMPANY_PHONE') 
+COMPANY_EMAIL = os.environ.get('COMPANY_EMAIL')

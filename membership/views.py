@@ -1,4 +1,3 @@
-from attr import attr
 from decimal import Decimal
 from django import forms
 from django.db import IntegrityError, transaction
@@ -18,6 +17,10 @@ from .forms import MemberMembershipForm, MembershipForm, MemberForm, SearchForm
 import datetime 
 from datetime import date
 import time
+
+from .notifications import send_payment_confirmation_email
+
+import logging
 
 
 def index(request):
@@ -111,6 +114,8 @@ def renew_membership(request, id):
         if form.is_valid():
             membership = form.cleaned_data['membership']
             discount = form.cleaned_data['discount']
+            print('Desconto recebido:', discount)
+
             paid_amount = form.cleaned_data['paid_amount']
 
             member_membership = MemberMembership(
@@ -136,6 +141,10 @@ def renew_membership(request, id):
             member_membership.save()
             
             messages.success(request, 'Membership was successfully renewed')
+
+            # Enviar email de confirmação de pagamento
+            send_payment_confirmation_email(member_membership)
+
             return HttpResponseRedirect(reverse('member-detail', args=(id,)))
             #return render(request, template, {
             #    'form': MemberMembershipForm(request.POST,request=request),
@@ -159,27 +168,48 @@ def renew_membership(request, id):
     })
 
 
+logger = logging.getLogger(__name__)
+
 def pay_membership(request):
     if request.method != 'POST':
-        return JsonResponse({'error':'Invalid Request'})
+        return JsonResponse({'error': 'Invalid Request'}, status=400)
+
+    try:
+        data = json.loads(request.body)
+        id = data.get('id', '')
+        discount = data.get('discount', '0')
+        paid_amount = data.get('paid_amount', '0')
+
+        # Conversão segura para Decimal
+        discount_decimal = Decimal(discount) if discount else Decimal('0')
+        paid_amount_decimal = Decimal(paid_amount) if paid_amount else Decimal('0')
+
+        member_membership = MemberMembership.objects.get(pk=id)
+        member_membership.discount = discount_decimal
+        member_membership.paid_amount += paid_amount_decimal
+
+        if member_membership.due_amount() > 0:
+            member_membership.status = 'I'
+        else:
+            member_membership.status = 'P'
+
+        member_membership.save()
+
+        # Enviar email de confirmação
+        success, message = send_payment_confirmation_email(member_membership)
+        if not success:
+            logger.warning(f"Email não enviado: {message}")
+
+        return JsonResponse({'success': True, 'message': 'Pagamento processado com sucesso'})
+
+    except MemberMembership.DoesNotExist:
+        return JsonResponse({'error': 'Membership not found'}, status=404)
+    except (InvalidOperation, ValueError) as e:
+        return JsonResponse({'error': f'Invalid value: {str(e)}'}, status=400)
+    except Exception as e:
+        logger.error(f"Erro no pagamento: {str(e)}", exc_info=True)
+        return JsonResponse({'error': str(e)}, status=500)
     
-    data = json.loads(request.body)
-    id = data.get('id','')
-    discount = data.get('discount','0')
-    paid_amount = data.get('paid_amount','0')
-    
-    member_membership = MemberMembership.objects.get(pk = id)
-    member_membership.discount = Decimal(discount)
-    member_membership.paid_amount = member_membership.paid_amount + Decimal(paid_amount)
-    
-    if member_membership.due_amount() > 0:
-        member_membership.status = 'I'
-    else:
-        member_membership.status = 'P'
-    member_membership.save()
-    
-    messages.success(request, 'Membership was successfully paid.')
-    return HttpResponseRedirect(reverse('member-detail', args=(id)))
 
 @transaction.atomic
 def add_member(request):

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fatura #{{ invoice_number }}</title>
+    <style>
+        /* Estilos globais */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        
+        /* Cabeçalho */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 20px;
+        }
+        
+        .logo {
+            max-width: 150px;
+            height: auto;
+        }
+        
+        .invoice-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 5px;
+        }
+        
+        /* Informações da empresa e cliente */
+        .info-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        
+        .info-box {
+            background-color: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            width: 48%;
+        }
+        
+        .info-box h3 {
+            margin-top: 0;
+            color: #4CAF50;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        /* Tabela de itens */
+        .invoice-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .invoice-table th {
+            background-color: #4CAF50;
+            color: white;
+            text-align: left;
+            padding: 12px 15px;
+        }
+        
+        .invoice-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .invoice-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .invoice-table tr:nth-child(even) {
+            background-color: #f8f8f8;
+        }
+        
+        /* Total */
+        .total-section {
+            text-align: right;
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .total-amount {
+            font-size: 20px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        
+        /* Rodapé */
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #4CAF50;
+            color: #777;
+            font-size: 14px;
+        }
+        
+        /* Responsividade */
+        @media (max-width: 600px) {
+            .header, .info-section {
+                flex-direction: column;
+            }
+            
+            .info-box {
+                width: 100%;
+                margin-bottom: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Cabeçalho com logo e número da fatura -->
+    <div class="header">
+        <div>
+            <h1 class="invoice-title">FATURA #{{ invoice_number }}</h1>
+            <p>Data: {{ membership.purchase_date|date:"d/m/Y" }}</p>
+        </div>
+        <div>
+            <!-- Substitua por sua logo em base64 ou URL -->
+            <div style="width: 150px; height: 80px; background-color: #4CAF50; color: white; 
+                        display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                SUA LOGO
+            </div>
+        </div>
+    </div>
+    
+    <!-- Seção de informações -->
+    <div class="info-section">
+        <div class="info-box">
+            <h3>Dados da Academia</h3>
+            <p><strong>{{ company.name }}</strong></p>
+            <p>{{ company.address }}</p>
+            <p>Telefone: {{ company.phone }}</p>
+            <p>Email: {{ company.email }}</p>
+        </div>
+        
+        <div class="info-box">
+            <h3>Dados do Membro</h3>
+            <p><strong>{{ member.first_name }} {{ member.last_name }}</strong></p>
+            <p>Email: {{ member.email }}</p>
+            <p>Membro desde: {{ member_membership.purchase_date|date:"d/m/Y" }}</p>
+        </div>
+    </div>
+    
+    <!-- Tabela de itens -->
+    <table class="invoice-table">
+        <thead>
+            <tr>
+                <th>Descrição</th>
+                <th>Valor</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ membership.membership.name }} (Validade até {{ membership.expiry_date|date:"d/m/Y" }})</td>
+                <td>€ {{ membership.total_amount|floatformat:2 }}</td>
+            </tr>
+            {% if membership.discount > 0 %}
+            <tr>
+                <td>Desconto aplicado</td>
+                <td>- € {{ membership.discount|floatformat:2 }}</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+    
+    <!-- Total -->
+    <div class="total-section">
+        <p>Subtotal: € {{ membership.total_amount|floatformat:2 }}</p>
+        {% if membership.discount > 0 %}
+        <p>Desconto: - € {{ membership.discount|floatformat:2 }}</p>
+        {% endif %}
+        <p class="total-amount">Total: € {{ membership.paid_amount|floatformat:2 }}</p>
+    </div>
+    
+    <!-- Informações de pagamento -->
+    <div class="info-box">
+        <h3>Informações de Pagamento</h3>
+        <p><strong>Status:</strong> 
+            {% if membership.status == 'P' %}Pago{% else %}Pendente{% endif %}</p>
+        <p><strong>Método de Pagamento:</strong> Transferência Bancária</p>
+        <p><strong>Data de Pagamento:</strong> {{ membership.purchase_date|date:"d/m/Y" }}</p>
+    </div>
+    
+    <!-- Rodapé -->
+    <div class="footer">
+        <p>Obrigado por escolher {{ company.name }}!</p>
+        <p>Em caso de dúvidas, entre em contato pelo email {{ company.email }} ou telefone {{ company.phone }}</p>
+        <p>Esta é uma fatura gerada automaticamente e não requer assinatura.</p>
+    </div>
+</body>
+</html>
