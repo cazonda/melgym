@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fatura #{{ invoice_number }}</title>
+    <title>Recibo #{{ invoice_number }}</title>
     <style>
         /* Estilos globais */
         body {
@@ -23,13 +23,11 @@
             margin-bottom: 30px;
             border-bottom: 2px solid #4CAF50;
             padding-bottom: 20px;
-        }
-        
+        }        
         .logo {
             max-width: 150px;
             height: auto;
-        }
-        
+        }        
         .invoice-title {
             font-size: 24px;
             font-weight: bold;
@@ -42,16 +40,14 @@
             display: flex;
             justify-content: space-between;
             margin-bottom: 30px;
-        }
-        
+        }        
         .info-box {
             background-color: white;
             padding: 15px;
             border-radius: 5px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             width: 48%;
-        }
-        
+        }        
         .info-box h3 {
             margin-top: 0;
             color: #4CAF50;
@@ -66,24 +62,20 @@
             margin-bottom: 30px;
             background-color: white;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
+        }        
         .invoice-table th {
             background-color: #4CAF50;
             color: white;
             text-align: left;
             padding: 12px 15px;
-        }
-        
+        }        
         .invoice-table td {
             padding: 12px 15px;
             border-bottom: 1px solid #eee;
-        }
-        
+        }        
         .invoice-table tr:last-child td {
             border-bottom: none;
-        }
-        
+        }        
         .invoice-table tr:nth-child(even) {
             background-color: #f8f8f8;
         }
@@ -96,8 +88,7 @@
             border-radius: 5px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             margin-bottom: 30px;
-        }
-        
+        }        
         .total-amount {
             font-size: 20px;
             font-weight: bold;
@@ -118,8 +109,7 @@
         @media (max-width: 600px) {
             .header, .info-section {
                 flex-direction: column;
-            }
-            
+            }            
             .info-box {
                 width: 100%;
                 margin-bottom: 15px;
@@ -128,18 +118,19 @@
     </style>
 </head>
 <body>
-    <!-- Cabeçalho com logo e número da fatura -->
+    <!-- Cabeçalho com logo e número do recibo -->
     <div class="header">
         <div>
-            <h1 class="invoice-title">FATURA #{{ invoice_number }}</h1>
+            <h1 class="invoice-title">RECIBO #{{ invoice_number }}</h1>
             <p>Data: {{ membership.purchase_date|date:"d/m/Y" }}</p>
         </div>
         <div>
             <!-- Substitua por sua logo em base64 ou URL -->
-            <div style="width: 150px; height: 80px; background-color: #4CAF50; color: white; 
+            <img width="150px" height="80px" src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAMCAgICAgMCAgIDAwMDBAYEBAQEBAgGBgUGCQgKCgkICQkKDA8MCgsOCwkJDRENDg8QEBEQCgwSExIQEw8QEBD/2wBDAQMDAwQDBAgEBAgQCwkLEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBD/wAARCABQAJYDASIAAhEBAxEB/8QAHQABAQADAQADAQAAAAAAAAAAAAIFBgcIAQMECf/EACwQAAEEAgICAgIBBAIDAAAAAAIBAwQFAAYHERIhEzEigQgUFTJBI1FEYXH/xAAbAQEAAwEBAQEAAAAAAAAAAAAAAwQFAgYHAf/EADMRAAEEAQIEAwYEBwAAAAAAAAEAAgMRBBIhBTFBURMigQYyYXGRsRRy0fAVI1KCocHh/9oADAMBAAIRAxEAPwD+VWMYwiYxjCKw+v3lZIfX7ysImMYRFX0iYRMZ05vhmHrcRmdy/u0TTDkNI8zUJEOdcG2qIokUUFFGEVF7T53G1VOlQVT3mxW/DnGlRSsXVtP5To6+R4IFpYahHKMnn7BTFuX5ghJ7Hv2qfXeYz+P4LHABxNmgQ1xB/KQKd/barnKjBq/8H9n0XD8Zvm18R2lLRHues3lZt2rtuC27a1BGv9GRL0AymHBF6Mq/SKY+BL6EizQ80cbKhy2a4XWBsehB7EHcHuCAQpWPbILaUxjGWF2oP7yco/v9ZOETGMYRMYxhExjGETGMYRWH1+8rJD6/eVhEzqnHX9LxxpUrmeVGZfvHJxU+otvghgxMBsXJFgoF6NY4G0jaL2nyvCSovx9ZytM6Rv8ALak8b8V01bIakK1UWLzrLJiZhKds30VCFPaEoNs9Iqdqnj/rrMrijTMIsY+7I6nflDXOI+TtIae4JChmGrSzoTv8qJ/1S13Tym7DyHUP2cGy2F+ZbMyJkdtDkSpyK6hu/wDZGZJ5dr9r7zqsbQ9/Y3Pld+4pnrNo623GQURpwxsnCkj8ZxulVXEB343l/wA/AGj8ulz43Pcdr4tXZNI0zU9craGrmNUlhLGAy9NlArXkgSJPtzp0gMyRCRPJPBEQR8c0Vdp2HXmoO6R9Krq5bdw3IVgrD/xk4yaeZMeR+Iqh+Kko9/kiL6+syHuyeIgSwhrWuADRdk8njqNJro3VtRvYKuS+XzNoA8vv6elrAaPvGwce7E1sWvPt/KglHkxnw+SNNjH6djSG19ONGnohX/6nSoipmeXNVo6K5r9g05t0NY2yAFzUNuGrhRQIyB6IRr/kTDzbrXa+1EQJf8s3LbLLYuS9X2i23jT6OPf0dbXXKWNbAZhynkfebAikA0ifJ8jTyOkqj2KgJdihki6zss6NL4J0eO7MYKZAv75kGUdFXG4xBCNPIe+xFXFc67TpV8uv95ZhyDLlRThoa8u8N4B1AjQZGmwBdbUSBQc7bddteXPDqo3R69LH7+JXOcYxno1bUH95OUf3+snCJjGMImMYwiYxjCJjGMIrD6/eVkh9fvKwi9Hfwx4z1zb9vLa792JJPXrSm/pIBvCpuG9YMNmbjJCqOM+BkPfadGo/ede5u0bX5lhxpam7CrImuhf2rsWJCQ5U5Gbb8GmGAUVd8VQVJEJPFtCVPrPI3FPKuy8R7VF2TX3kNtuTGelwTNRamgw8DwNuKnvx8wFfXvtM2TmPn+z5ch6o0dE3SytX/uBDIizCJXTlSVfUhRURW/FV6T2qr995864n7PcXy/aFmax/8nvY8g8J7a0nnbj0B96+hrJmxZ35QkB8v22I+66drla7Uwd2Y1bkCnpbDY5LVy1PfsHauW0wPTrYuRVE/Fjp99TVVL8kYJF6Fe/zNhvUqdKbhfyB1Bs55stsfBvU2Q+PSoPXg4hA6RCqp14D+Soo+KfivPKna+MdmjKt1Pv9F2KREKDOtqxXLODZtGPiayWHXEfbI0RPNQMxVfaAOfRA0rjWosGLcP5GVTZRHRkMOV9DZuSgMCQhIQcabBCRURU7cRO/95KcAse8zag41zhL7oAc2Bza8ooA7C7aLIXRionVd/lv7WOn/F1i3qdfu+R7/YrC8ZkNXdaOuPDSi7evk84CtI66fbfxvfEw2RqSr24jionivSdj4p4/oK3g+roLNmgvXK+t3ppbCOy2+y+bfggutuEPa9dr0X2nvrPGe27npUavfpuOoF2T81xXLPY7eaQTp3faq2jDJ/E00pKpKJK6ZL0vmn1m7aP/ACtuND4xq+OqzT4T39uh3cJZz8s/+QLHx7JGxRPEm/H1+Sov/SZmcZ9m+KZuDEzCLvK4eV2lpDWxvaHXd83AUSXb7gVQhyMSaSNoj6H4DYAi1pPPWg1HGXK1/p1BOak10GR1G8ZSPm02qdo26SInTo/RD16X1nPsyGwX9ztV1M2LYrF6fZWDqvypLqopuuL9kvX+8x+fSMCKaDFiiyHantaA49yBufUrWia5rA15s1uoP7/WTlH9/rJy2pExjGETGMYRMYxhExjGEVh9fvKyQ+srCL0H/Fav1g6Dk++2OPqolS0cORFm7HULZRIZlNACNWREjXsSUfxRV7JF+kXP331pQVHEMnlKq1vRbeyY5RkRWZLOvgFfJiJVp02EZwRUWFL80bJE6L8uu88/1my39NXWlRVW8qLCu2QjWLDTniEpoDQxA0/2iGiEn/tM6jA412qw/jXN2xdwlDXxbVy3Y1r4lJp6OBNRH7FC76Qhceba669ihL3+OeK4lwtkGcczJmpssrGhu9EaQ3TsLtxBPPTW5o2VnTQhsniPd7xAr0qvX6LvrzulPfydrNMsuJ9IPXafU3NichRKGOwUx46NJJg4SJ+Q+fkoIv8AiqoqfXeZHS+FONqay4ucjUFNda/tW4W9jWSpkMHjk07lQj0diQhIqkrLiOAoL9G2SonvPMEWbvEvSbfnY9/tUvK+xhap33245EkQXxVFd77QUaYRvx69iX2nXvrXHXHe1x7HXtdgc1bPGSm1yt22iqqhlo54SLNtf6hITLjwIfxAZKaAXmaF+IdqvXk+J8Jfg4+luZo0R+G8ecgvDHgv2Gx1SsN9i6+QqlNAYm0JKoUefOjv9XBfbRXfHcrkqZZ2dRrVrV1mpyTauaPjh1qBRyzfRBmTYBiiyABOx+RUUR+QfS9eswNJrGqb/sWw7jqmoQ2bLU6ufT7bS6u7aa/DV91UGdIgGPUcpAtkHXh4gSKoiveapF2fZJ1HsnLN7/IfkYdn49kFRov9rRFIZTrwsgiuviYtmsft0DDsF6TxNUzF8mHzbxIVBy+1y/sEvYtnhjCvnfMwcgSfgZkBBcVVUXB+B9o0TrxRUNERFHJxhOnyPwrJdLnDw6JcLc3TJQPgtbRbRJLSw6g0xkkl3Xh6naA6iRXXmKP9Pb4Vvy76D/IzW5ur8sWkGbR65VLIYiTWmdd+RK5xt5gDF5kHPybFxF81bVE8VJUROus5nmR2LY77bLmXsez3Ey1tJx/JIly3ldddLrpFIl9r0iIiJ/pEREzG/vPp3DoJcXDigmIL2tAJF0SBRq9/qtiJpZG1ruYCk/v9ZOfJ/efGXFImMYwiYxjCJjGMImMYwisPr95WSH1+8rCJ9Z0SHz7ylAoo+qRNjJuhj0j1B/aEaT+icjO+fmRs/wCJvKThF8qp5oXSovpM53jK2Th4+YAMhgeBuLANHuL6/FcPjZJ74tbnp/LGy6XrdnqUGDRT6q2kNy5Ee1qWJoo+22bYOB8or4EguH0qe/eZao5/36qmMSnGqGxCPV11S2xY00eS0LUFOopohD2jgdr+aKir2vl2nrObYyCXhODM5zpIWku57Dfl+g+g7LkwROJJaN1tznKm5yWdlZsLBmam3Wke5uCkxwMpMplxxwCVevxRSec7FOkVF6/0mZHc+duUOQ6uzpdz2Z62hWdk3a/DJFCGI+CGKJGT/wAcPFwhUA6FUQfXpM0DGfv8LwtYk8Fuobg6RYIDRt22a0fJoHRPBju9Iv8Af6BMYxl9SqD+8nKP7ycImMYwiYxjCL//2Q=="> 
+            <!--div style="width: 150px; height: 80px; background-color: #4CAF50; color: white; 
                         display: flex; align-items: center; justify-content: center; font-weight: bold;">
                 SUA LOGO
-            </div>
+            </div-->
         </div>
     </div>
     
@@ -151,8 +142,7 @@
             <p>{{ company.address }}</p>
             <p>Telefone: {{ company.phone }}</p>
             <p>Email: {{ company.email }}</p>
-        </div>
-        
+        </div>        
         <div class="info-box">
             <h3>Dados do Membro</h3>
             <p><strong>{{ member.first_name }} {{ member.last_name }}</strong></p>
@@ -172,12 +162,12 @@
         <tbody>
             <tr>
                 <td>{{ membership.membership.name }} (Validade até {{ membership.expiry_date|date:"d/m/Y" }})</td>
-                <td>€ {{ membership.total_amount|floatformat:2 }}</td>
+                <td>{{ membership.total_amount|floatformat:2 }} MZN</td>
             </tr>
             {% if membership.discount > 0 %}
             <tr>
                 <td>Desconto aplicado</td>
-                <td>- € {{ membership.discount|floatformat:2 }}</td>
+                <td>-{{ membership.discount|floatformat:2 }} MZN</td>
             </tr>
             {% endif %}
         </tbody>
@@ -185,11 +175,11 @@
     
     <!-- Total -->
     <div class="total-section">
-        <p>Subtotal: € {{ membership.total_amount|floatformat:2 }}</p>
+        <p>Subtotal: {{ membership.total_amount|floatformat:2 }} MZN</p>
         {% if membership.discount > 0 %}
-        <p>Desconto: - € {{ membership.discount|floatformat:2 }}</p>
+        <p>Desconto: -{{ membership.discount|floatformat:2 }} MZN</p>
         {% endif %}
-        <p class="total-amount">Total: € {{ membership.paid_amount|floatformat:2 }}</p>
+        <p class="total-amount">Total: MZN {{ membership.paid_amount|floatformat:2 }}</p>
     </div>
     
     <!-- Informações de pagamento -->
@@ -197,7 +187,7 @@
         <h3>Informações de Pagamento</h3>
         <p><strong>Status:</strong> 
             {% if membership.status == 'P' %}Pago{% else %}Pendente{% endif %}</p>
-        <p><strong>Método de Pagamento:</strong> Transferência Bancária</p>
+        <p><strong>Método de Pagamento:</strong> Cash</p>
         <p><strong>Data de Pagamento:</strong> {{ membership.purchase_date|date:"d/m/Y" }}</p>
     </div>
     
@@ -205,7 +195,7 @@
     <div class="footer">
         <p>Obrigado por escolher {{ company.name }}!</p>
         <p>Em caso de dúvidas, entre em contato pelo email {{ company.email }} ou telefone {{ company.phone }}</p>
-        <p>Esta é uma fatura gerada automaticamente e não requer assinatura.</p>
+        <p>Est é um recibo gerado automaticamente e não requer assinatura.</p>
     </div>
 </body>
 </html>

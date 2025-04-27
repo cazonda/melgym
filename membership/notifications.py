@@ -24,7 +24,7 @@ def render_pdf_template(context, template_name):
 
 def send_payment_confirmation_email(member_membership):
     """
-    Envia email de confirmação com fatura PDF anexada
+    Envia email de confirmação com recibo PDF anexado
     
     Args:
         member_membership: Instância de MemberMembership
@@ -50,7 +50,7 @@ def send_payment_confirmation_email(member_membership):
         pdf_content = render_pdf_template(context, 'invoice_template.html')
 
         # 2. Preparar email
-        subject = f'Confirmação de Pagamento - Fatura #{member_membership.id}'
+        subject = f'Confirmação de Pagamento - Recibo #{member_membership.id}'
         html_message = render_to_string(
             'membership/emails/payment_confirmation.html',
             context
@@ -67,7 +67,7 @@ def send_payment_confirmation_email(member_membership):
         )
         email.content_subtype = "html"
         email.attach(
-            f'Fatura_{member_membership.id}.pdf',
+            f'Recibo_{member_membership.id}.pdf',
             pdf_content,
             'application/pdf'
         )
