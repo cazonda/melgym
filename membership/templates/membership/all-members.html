@@ -19,7 +19,9 @@
     <tr>
         <th>#</th>
         <th>Name</th>
-        <th>Status</th>        
+        <th>Status</th>
+        <th>Amount</th>
+        <th>Until</th>        
     </tr>
     {% for member in page_obj %} 
         <tr onclick='document.location = "{% url 'member-detail' member.id%}"'>
@@ -36,6 +38,8 @@
                     <span class="badge badge-dark">Incomplete</span>
                 {% endif %}
             </td>
+            <td>{{member.latest_membership.due_amount}}</td>
+            <td>{{member.latest_membership.expiry_date|date:"d/m/Y"}}</td>
         </tr>
         {% empty %}
         <p>Member does not exists</p>
