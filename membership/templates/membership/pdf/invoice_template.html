@@ -12,7 +12,7 @@
             color: #333;
             max-width: 800px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 10px;
             background-color: #f9f9f9;
         }
         
@@ -20,9 +20,9 @@
         .header {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 30px;
+            margin-bottom: 15px;
             border-bottom: 2px solid #4CAF50;
-            padding-bottom: 20px;
+            padding-bottom: 10px;
         }        
         .logo {
             max-width: 150px;
@@ -59,7 +59,7 @@
         .invoice-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 30px;
+            margin-bottom: 10px;
             background-color: white;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }        
@@ -79,15 +79,18 @@
         .invoice-table tr:nth-child(even) {
             background-color: #f8f8f8;
         }
+        .money-align {
+            text-align: right;
+        }
         
         /* Total */
         .total-section {
             text-align: right;
             background-color: white;
-            padding: 20px;
+            padding: 2px;
             border-radius: 5px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
+            margin-bottom: 5px;
         }        
         .total-amount {
             font-size: 20px;
@@ -98,8 +101,8 @@
         /* Rodapé */
         .footer {
             text-align: center;
-            margin-top: 40px;
-            padding-top: 20px;
+            margin-top: 20px;
+            padding-top: 10px;
             border-top: 2px solid #4CAF50;
             color: #777;
             font-size: 14px;
@@ -112,7 +115,7 @@
             }            
             .info-box {
                 width: 100%;
-                margin-bottom: 15px;
+                margin-bottom: 10px;
             }
         }
     </style>
@@ -137,7 +140,7 @@
     <!-- Seção de informações -->
     <div class="info-section">
         <div class="info-box">
-            <h3>Dados da Academia</h3>
+            <h3>Dados do Ginásio</h3>
             <p><strong>{{ company.name }}</strong></p>
             <p>{{ company.address }}</p>
             <p>Telefone: {{ company.phone }}</p>
@@ -156,18 +159,18 @@
         <thead>
             <tr>
                 <th>Descrição</th>
-                <th>Valor</th>
+                <th class="money-align">Valor</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td>{{ membership.membership.name }} (Validade até {{ membership.expiry_date|date:"d/m/Y" }})</td>
-                <td>{{ membership.total_amount|floatformat:2 }} MZN</td>
+                <td>{{ membership.membership.name }} (até {{ membership.expiry_date|date:"d/m/Y" }})</td>
+                <td class="money-align">{{ membership.total_amount|floatformat:2 }} MZN</td>
             </tr>
             {% if membership.discount > 0 %}
             <tr>
                 <td>Desconto aplicado</td>
-                <td>-{{ membership.discount|floatformat:2 }} MZN</td>
+                <td class="money-align">-{{ membership.discount|floatformat:2 }} MZN</td>
             </tr>
             {% endif %}
         </tbody>
@@ -175,27 +178,23 @@
     
     <!-- Total -->
     <div class="total-section">
-        <p>Subtotal: {{ membership.total_amount|floatformat:2 }} MZN</p>
-        {% if membership.discount > 0 %}
-        <p>Desconto: -{{ membership.discount|floatformat:2 }} MZN</p>
-        {% endif %}
-        <p class="total-amount">Total: MZN {{ membership.paid_amount|floatformat:2 }}</p>
+        <p class="total-amount">Total: {{ membership.paid_amount|floatformat:2 }} MZN</p>
     </div>
     
     <!-- Informações de pagamento -->
     <div class="info-box">
         <h3>Informações de Pagamento</h3>
-        <p><strong>Status:</strong> 
-            {% if membership.status == 'P' %}Pago{% else %}Pendente{% endif %}</p>
+        <p>
+            <strong>Status:</strong> 
+            {% if membership.status == 'P' %}Pago{% else %}Pendente{% endif %}
+        </p>
         <p><strong>Método de Pagamento:</strong> Cash</p>
         <p><strong>Data de Pagamento:</strong> {{ membership.purchase_date|date:"d/m/Y" }}</p>
     </div>
     
     <!-- Rodapé -->
     <div class="footer">
-        <p>Obrigado por escolher {{ company.name }}!</p>
-        <p>Em caso de dúvidas, entre em contato pelo email {{ company.email }} ou telefone {{ company.phone }}</p>
-        <p>Est é um recibo gerado automaticamente e não requer assinatura.</p>
+        <p>Recibo gerado por computador(<strong>Liftlink</strong>). Desenvolvido pela <a href="https://www.casco.co.mz">Casco</a></p>
     </div>
 </body>
 </html>

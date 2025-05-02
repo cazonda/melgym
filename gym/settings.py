@@ -153,7 +153,7 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
-EMAIL_FROM = 'Fitness La Lista'
+DEFAULT_FROM_EMAIL = 'Casco <contact.casco@gmail.com>'
 
 # Company information
 COMPANY_NAME = os.environ.get('COMPANY_NAME')
