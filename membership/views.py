@@ -114,7 +114,6 @@ def renew_membership(request, id):
         if form.is_valid():
             membership = form.cleaned_data['membership']
             discount = form.cleaned_data['discount']
-            print('Desconto recebido:', discount)
 
             paid_amount = form.cleaned_data['paid_amount']
 
@@ -138,13 +137,13 @@ def renew_membership(request, id):
                 member_membership.status = 'I'
             else:
                 member_membership.status = 'P'
+                # Enviar email de confirmação de pagamento
+                send_payment_confirmation_email(member_membership)
             member_membership.save()
             
             messages.success(request, 'Membership was successfully renewed')
 
-            # Enviar email de confirmação de pagamento
-            send_payment_confirmation_email(member_membership)
-
+            #TODO enviar mail de confirmacão da renovacao
             return HttpResponseRedirect(reverse('member-detail', args=(id,)))
             #return render(request, template, {
             #    'form': MemberMembershipForm(request.POST,request=request),

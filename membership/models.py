@@ -101,6 +101,7 @@ class MemberMembership(Base):
     training_end = models.TimeField()     
     #(U)npaid, (I)ncomplete, (P)aid
     status = models.CharField(max_length=2, blank=False)
+    auto_renwe = models.BooleanField(default = True)
 
     def due_amount(self):
         return self.total_amount + self.admission_fees - self.discount - self.paid_amount
