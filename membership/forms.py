@@ -2,6 +2,7 @@ from datetime import date
 from django import forms
 from django.forms import  DateInput, NumberInput, TextInput, EmailInput, ModelForm
 from requests import request
+from django.db.models import Q
 
 from .models import MemberMembership, Membership, Member, MembershipType, TrainingObjective
 
@@ -99,7 +100,7 @@ class MembershipForm(ModelForm):
         
 class MemberForm(ModelForm):
     membership = forms.ModelChoiceField(
-        queryset=Membership.objects.all(), 
+        queryset=Membership.objects.filter(active=True), 
         widget=forms.Select
     )
     membership.widget.attrs.update({'class': 'form-control'})
@@ -113,6 +114,16 @@ class MemberForm(ModelForm):
     def __init__(self,*args,**kwargs):
         self.request = kwargs.pop("request")
         super(MemberForm,self).__init__(*args,**kwargs)
+        
+        # Se tiver uma instância (edição de membro existente)
+        if 'instance' in kwargs:
+            member = kwargs['instance']
+            if hasattr(member, 'latest_membership') and member.latest_membership():
+                self.fields['membership'].initial = member.latest_membership().membership
+                # Forçar a atualização do queryset para incluir o plano atual
+                self.fields['membership'].queryset = Membership.objects.filter(
+                    Q(active=True) | Q(id=member.latest_membership().membership.id)
+                )
 
     class Meta:
         model = Member
@@ -159,39 +170,69 @@ class MemberForm(ModelForm):
             })            
         }
         
-
 class MemberMembershipForm(ModelForm):
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop("request")
-        super(MemberMembershipForm, self).__init__(*args,**kwargs)
-    
+        super(MemberMembershipForm, self).__init__(*args, **kwargs)
+        self.fields['membership'].widget.attrs.update({'class': 'form-control'})
+
     membership = forms.ModelChoiceField(
         queryset=Membership.objects.all(), 
         widget=forms.Select(),
     )
-    membership.widget.attrs.update({'class': 'form-control'}) 
+
+    start_date = forms.DateField(
+        required=True,
+        widget=forms.DateInput(attrs={
+            'class': 'form-control',
+            'type': 'date',
+            'id': 'start_date'
+        })
+    )
+
     class Meta:
         model = MemberMembership
-        fields = ['membership', 'discount', 'paid_amount']
-
-        style = 'max-width: 300px;'
+        fields = ['membership', 'discount', 'paid_amount', 'start_date']
         widgets = {
             'discount': NumberInput(attrs={
-                'label': 'Discount',
-                'class':'form-control',
-                'style': style,
+                'class': 'form-control',
                 'placeholder': 'Discount',
                 'min': '0.00',
                 'step': '0.01',
-            }),   
+            }),
             'paid_amount': NumberInput(attrs={
-                'class':'form-control',
-                'style': style,
+                'class': 'form-control',
                 'placeholder': 'Paid Amount',
                 'min': '0.00',
                 'step': '0.01',
-            })  
+            })
         }
+
+class MemberMembershipEditForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop("request")
+        super(MemberMembershipEditForm, self).__init__(*args, **kwargs)
+        self.fields['membership'].widget.attrs.update({'class': 'form-control'})
+
+    class Meta:
+        model = MemberMembership
+        fields = ['membership', 'expiry_date', 'status']
+        widgets = {
+            'expiry_date': forms.DateInput(attrs={
+                'type': 'date',
+                'class': 'form-control',
+                'style': 'max-width: 300px;'
+            }),
+            'status': forms.Select(choices=(
+                ('U', 'Unpaid'),
+                ('I', 'Incomplete'),
+                ('P', 'Paid')
+            ), attrs={
+                'class': 'form-control',
+                'style': 'max-width: 300px;'
+            })
+        }
+
         
 class SearchForm(forms.Form):
     search = forms.CharField(label='',max_length=100,widget=forms.TextInput(attrs={

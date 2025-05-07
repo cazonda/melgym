@@ -308,7 +308,7 @@ def edit_member(request, id):
     member = Member.objects.get(pk=id)
     
     if request.method == 'POST':        
-        form = MemberForm(request=request, instance = member)
+        form = MemberForm(request.POST, request=request, instance=member)
         if form.is_valid():
             form.save()
             messages.success(request, 'Member successfully edited.')
@@ -316,9 +316,19 @@ def edit_member(request, id):
         else:
             messages.error(request, 'Please correct the following errors:')
             return render(request, template, {'form' : form, 'id': id})
-        
+    
+    # Obter o plano atual do membro
+    current_membership = member.latest_membership().membership if member.latest_membership() else None
+    
+    # Criar o formulário com o plano atual como valor inicial
+    form = MemberForm(
+        request=request,
+        instance=member,
+        initial={'membership': current_membership} if current_membership else None
+    )
+    
     return render(request, template, {
-        'form': MemberForm(request=request, instance = member),
+        'form': form,
         'id': id
     })
 
