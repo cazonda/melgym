@@ -1,0 +1,1 @@
+# Este arquivo é necessário para que o diretório commands seja reconhecido como um pacote Python 

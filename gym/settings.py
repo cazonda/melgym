@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'membership',
+    'django_crontab' #Para o Crontab
 ]
 
 MIDDLEWARE = [
@@ -145,6 +146,17 @@ CSRF_TRUSTED_ORIGINS = ['https://*.casco.co.mz','https://*.127.0.0.1']
 mimetypes.add_type("text/css", ".css", True)
 mimetypes.add_type("text/javascript", ".js", True)
 mimetypes.add_type("text/html", ".html", True)
+
+
+#Configuração do Crontab para renovação de assinaturas todos os dias à meia-noite
+CRONJOBS = [
+    ('07 22 * * *', 'membership.scheduler_renew_memberships.check_and_renew_memberships')
+]
+
+# Configurações adicionais para o django-crontab
+CRONTAB_LOCK_JOBS = True
+CRONTAB_COMMAND_PREFIX = 'DJANGO_SETTINGS_MODULE=gym.settings'
+CRONTAB_COMMAND_SUFFIX = '>> /tmp/django-cron.log 2>&1'
 
 # Email configuration
 EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND')
