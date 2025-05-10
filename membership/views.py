@@ -19,6 +19,7 @@ from datetime import date
 import time
 
 from .notifications import send_payment_confirmation_email
+from .services import process_membership_renewal
 
 import logging
 
@@ -108,51 +109,30 @@ def membership(request):
 
 def renew_membership(request, id):
     template = 'membership/renew-membership.html'
-    member = Member.objects.get(id = id)
+    member = Member.objects.get(id=id)
     if request.method == "POST":
         form = MemberMembershipForm(request.POST, request=request)
         if form.is_valid():
-            membership = form.cleaned_data['membership']
-            discount = form.cleaned_data['discount']
-
-            paid_amount = form.cleaned_data['paid_amount']
-
-            member_membership = MemberMembership(
-                membership = membership,
-                member = member,
-                purchase_date = date.today(),
-                expiry_date = calc_membership_expiry_date(membership.duration, member.latest_membership().expiry_date),
-                total_amount = membership.price,
-                discount = discount,
-                paid_amount = paid_amount,
-                training_start = datetime.time(0, 0, 0),
-                training_end = datetime.time(23, 59, 59),
-                #admission fee só se cobra no cadastro do membro
-                admission_fees = 0,
-                status = 'U'
-            )
-            if member_membership.paid_amount == 0:
-                member_membership.status = 'U'
-            elif member_membership.due_amount() > 0:
-                member_membership.status = 'I'
-            else:
-                member_membership.status = 'P'
-                # Enviar email de confirmação de pagamento
-                send_payment_confirmation_email(member_membership)
-            member_membership.save()
-            
-            messages.success(request, 'Membership was successfully renewed')
-
-            #TODO enviar mail de confirmacão da renovacao
-            return HttpResponseRedirect(reverse('member-detail', args=(id,)))
-            #return render(request, template, {
-            #    'form': MemberMembershipForm(request.POST,request=request),
-            #    'member_id': id
-            #})            
+            try:
+                process_membership_renewal(
+                    member_id=id,
+                    membership_id=form.cleaned_data['membership'].id,
+                    paid_amount=form.cleaned_data['paid_amount'],
+                    discount=form.cleaned_data['discount'],
+                    auto_renew=form.cleaned_data.get('auto_renew', True)
+                )
+                messages.success(request, 'Membership was successfully renewed')
+                return HttpResponseRedirect(reverse('member-detail', args=(id,)))
+            except Exception as e:
+                messages.error(request, f'Error renewing membership: {str(e)}')
+                return render(request, template, {
+                    'form': MemberMembershipForm(request.POST, request=request),
+                    'member_id': id,
+                })
         else:
             messages.error(request, form.errors)  
             return render(request, template, {
-                'form': MemberMembershipForm(request.POST,request=request),
+                'form': MemberMembershipForm(request.POST, request=request),
                 'member_id': id,
             })
     
@@ -308,7 +288,7 @@ def edit_member(request, id):
     member = Member.objects.get(pk=id)
     
     if request.method == 'POST':        
-        form = MemberForm(request=request, instance = member)
+        form = MemberForm(request.POST, request=request, instance=member)
         if form.is_valid():
             form.save()
             messages.success(request, 'Member successfully edited.')
@@ -316,9 +296,19 @@ def edit_member(request, id):
         else:
             messages.error(request, 'Please correct the following errors:')
             return render(request, template, {'form' : form, 'id': id})
-        
+    
+    # Obter o plano atual do membro
+    current_membership = member.latest_membership().membership if member.latest_membership() else None
+    
+    # Criar o formulário com o plano atual como valor inicial
+    form = MemberForm(
+        request=request,
+        instance=member,
+        initial={'membership': current_membership} if current_membership else None
+    )
+    
     return render(request, template, {
-        'form': MemberForm(request=request, instance = member),
+        'form': form,
         'id': id
     })
 

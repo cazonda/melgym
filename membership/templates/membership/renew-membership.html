@@ -1,37 +1,192 @@
 {% extends "membership/layout.html" %}
 
-{% block body %}
+{% block title %} Melgym | Renew Membership {% endblock %}
+{% load tz %}
 
-<div id='member-form'>
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+<script>
+    // Gera a data de hoje no formato YYYY-MM-DD
+    const hoje = new Date().toISOString().split('T')[0];
+    // Define essa data como valor do input
+    document.getElementById('start_date').value = hoje;
+  </script>
+
+
+<style>
+    .current-plan {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border-left: 4px solid #007bff;
+    }
+    .current-plan h4 {
+        color: #007bff;
+        margin-bottom: 15px;
+    }
+    .plan-details {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    .plan-detail {
+        padding: 10px;
+        background: white;
+        border-radius: 4px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .calendar-container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin: 20px 0;
+    }
+    .period-options {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        margin-top: 15px;
+    }
+    .period-option {
+        padding: 15px;
+        text-align: center;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .period-option:hover {
+        border-color: #007bff;
+        background-color: #f8f9fa;
+    }
+    .period-option.selected {
+        background-color: #007bff;
+        color: white;
+        border-color: #007bff;
+    }
+    .form-section {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-top: 20px;
+    }
+    .auto-renewal {
+        margin-top: 20px;
+        padding: 15px;
+        background: #e9ecef;
+        border-radius: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <h2 class="text-center mb-4">Renew Membership</h2>
+    
     {% if messages %}
     <ul class="messages">
         {% for message in messages %}
-        <li{% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</li>
-            {% endfor %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
     </ul>
     {% endif %}
-    <div class="d-flex justify-content-center">
-        <form action="{% url 'renew-membership' member_id %}" method="post">
-            {% csrf_token %}
-            <div class="form-group">
-                <h4 style="text-align: center;">Renew {{member.first_name}} {{member.last_name}}</h4>
-            </div>
-            <div class="form-group">
-                <label><strong>Membership</strong></label>
-                {{form.membership}}
-            </div>
-            <div class="form-group">
-                <label><strong>Paid Amount</strong></label>
-                {{form.paid_amount}}
-            </div>
-            <div class="form-group">
-                <label><strong>Discount</strong></label>
-                {{form.discount}}
-            </div>            
-            <div class="form-group">
-                <input class="btn btn-dark" type="submit" value="Renew">
-            </div>
-        </form>
-    </div>
 
-    {% endblock %}
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Current Plan Information -->
+            <div class="current-plan">
+                <h4>Current Membership Plan</h4>
+                <div class="plan-details">
+                    <div class="plan-detail">
+                        <strong>Plan:</strong> {{ member.latest_membership.membership.name }}
+                    </div>
+                    <div class="plan-detail">
+                        <strong>Expires:</strong> {{ member.latest_membership.expiry_date|date:"d/m/Y" }}
+                    </div>
+                    <div class="plan-detail">
+                        <strong>Status:</strong> 
+                        {% if member.latest_membership.status == 'P' %}
+                            <span class="text-success">Paid</span>
+                        {% elif member.latest_membership.status == 'I' %}
+                            <span class="text-warning">Incomplete</span>
+                        {% else %}
+                            <span class="text-danger">Unpaid</span>
+                        {% endif %}
+                    </div>
+                    <div class="plan-detail">
+                        <strong>Nome:</strong> {{ member.first_name }} {{ member.last_name }}
+                    </div>
+                </div>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="calendar-container">
+                    <h4>Select Renewal Period</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="start_date">Start Date</label>
+                                <input type="date" value="{% now 'Y-m-d' %}"   id="start_date" name="start_date" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="end_date">End Date</label>
+                                <input type="text" id="end_date" name="end_date" class="form-control" readonly>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+
+                <div class="form-section">
+                    <div class="form-group">
+                        <label for="membership">New Membership Plan</label>
+                        {{ form.membership }}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="discount">Discount</label>
+                        {{ form.discount }}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="paid_amount">Paid Amount</label>
+                        {{ form.paid_amount }}
+                    </div>
+                </div>
+
+                <div class="auto-renewal">
+                    <div class="form-check">
+                        <input type="checkbox" 
+                               class="form-check-input"     
+                               id="auto_renew" 
+                               name="auto_renew" 
+                               {% if member.latest_membership.auto_renew  %}checked{% endif %}>
+                        <label class="form-check-label" for="auto_renew">
+                            Renovação automática
+                        </label>
+                    </div>
+                    <small class="text-muted">
+                        A assinatura será renovada automaticamente ao expirar. Você pode cancelá-la a qualquer momento.
+                     </small>
+                </div>
+
+                <div class="d-none">
+                    Debug: {{ member.latest_membership.auto_renew }}
+                </div>
+
+                <div class="form-group text-center mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg">Renew Membership</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
