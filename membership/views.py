@@ -18,10 +18,11 @@ import datetime
 from datetime import date
 import time
 
-from .notifications import send_payment_confirmation_email
+from .notifications import send_payment_confirmation_email, render_pdf_template
 from .services import process_membership_renewal
 
 import logging
+from django.conf import settings
 
 
 def index(request):
@@ -386,3 +387,38 @@ def punch_member_in_or_out(request):
     attendance.save()
     messages.success(request, "Check-{0} Registered".format(movement))
     return HttpResponseRedirect(reverse('member-detail', args=(id)))
+
+@login_required
+def download_receipt(request, membership_id):
+    try:
+        member_membership = MemberMembership.objects.get(pk=membership_id)
+        
+        # Usa o mesmo contexto que é usado no email
+        context = {
+            'member': member_membership.member,
+            'membership': member_membership,
+            'invoice_number': member_membership.id,
+            'company': {
+                'name': settings.COMPANY_NAME,
+                'address': settings.COMPANY_ADDRESS,
+                'phone': settings.COMPANY_PHONE,
+                'email': settings.COMPANY_EMAIL,
+            }
+        }
+        
+        # Gera o PDF usando o método existente
+        pdf_content = render_pdf_template(context, 'invoice_template.html')
+        
+        # Cria a resposta HTTP com o PDF
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="Recibo_{member_membership.member.first_name}.{member_membership.member.last_name}_{member_membership.purchase_date}.pdf"'
+        response.write(pdf_content)
+        
+        return response
+        
+    except MemberMembership.DoesNotExist:
+        messages.error(request, 'Membership not found')
+        return HttpResponseRedirect(reverse('member-detail', args=(member_membership.member.id,)))
+    except Exception as e:
+        messages.error(request, f'Error generating PDF: {str(e)}')
+        return HttpResponseRedirect(reverse('member-detail', args=(member_membership.member.id,)))

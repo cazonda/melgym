@@ -19,5 +19,6 @@ urlpatterns = [
     path("remove/<int:id>",views.remove,name="remove"),
     path("renew",views.renew,name="renew"),
     path("edit-price", views.edit_price,name="edit-price"),
-    path("remove-plan/<int:id>",views.remove_plan, name="remove-plan")
+    path("remove-plan/<int:id>",views.remove_plan, name="remove-plan"),
+    path("download-receipt/<int:membership_id>", views.download_receipt, name="download-receipt")
 ]

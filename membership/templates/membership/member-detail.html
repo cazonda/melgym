@@ -89,7 +89,13 @@
                               </button>
                             </td>
                           {% else %}
-                            <td><i class="fa fa-check-double fa-2xl" style="color: #28a745;"></i></td>  
+                            <td>
+                              <i class="fa fa-check-double fa-2xl" style="color: #28a745;"></i>
+                              <span style="margin-left: 2rem;"></span>
+                              <a href="{% url 'download-receipt' membership.id %}" class="btn btn-success" title="Download Recibo">
+                               <span class="fa fa-file-pdf"></span>
+                              </a>
+                            </td>  
                           {% endif %}
                         </tr>
                         {% empty %}

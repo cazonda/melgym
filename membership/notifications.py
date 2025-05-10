@@ -67,7 +67,7 @@ def send_payment_confirmation_email(member_membership):
         )
         email.content_subtype = "html"
         email.attach(
-            f'Recibo_{member_membership.id}.pdf',
+            f'Recibo_{member_membership.member.first_name}.{member_membership.member.last_name}_{member_membership.purchase_date}.pdf',
             pdf_content,
             'application/pdf'
         )
