@@ -33,3 +33,4 @@ COPY . .
 #hello delete me
 RUN python manage.py migrate
 #RUN python manage.py createsuperuser --noinput || True
+#forcing a commit
